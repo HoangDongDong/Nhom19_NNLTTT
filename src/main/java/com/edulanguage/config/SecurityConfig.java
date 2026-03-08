@@ -8,12 +8,13 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * Cấu hình Spring Security: form đăng nhập, phân quyền theo role, mã hóa mật khẩu BCrypt.
+ * Cấu hình Spring Security: form đăng nhập, phân quyền theo role.
+ * Mật khẩu lưu dạng ký tự bình thường (không mã hóa) — chỉ dùng cho dev/demo.
  */
 @Configuration
 @EnableWebSecurity
@@ -58,7 +59,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return NoOpPasswordEncoder.getInstance();
     }
 
     /** Dùng cho desktop app: xác thực username/password không qua HTTP. */

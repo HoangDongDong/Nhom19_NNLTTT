@@ -1,26 +1,40 @@
 package com.edulanguage.UI;
 
+import com.edulanguage.UI.panels.*;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.stream.Collectors;
 
 /**
- * Màn hình chính desktop sau khi đăng nhập. Hiển thị theo vai trò (ADMIN, TEACHER, STUDENT, STAFF).
+ * Frame chính desktop: Sidebar Menu (trái) + CardLayout nội dung (phải).
+ * Sau đăng nhập hiển thị theo vai trò; chuyển màn hình bằng menu không đổi cửa sổ.
  */
 public class MainFrame extends JFrame {
 
+    private static final String CARD_HOME = "home";
+    private static final String CARD_STUDENTS = "students";
+    private static final String CARD_TEACHERS = "teachers";
+    private static final String CARD_COURSES = "courses";
+    private static final String CARD_CLASSES = "classes";
+
     private final ConfigurableApplicationContext context;
+    private final String username;
+    private final String role;
+    private final JPanel contentPanel;
+    private final CardLayout cardLayout;
 
     public MainFrame(ConfigurableApplicationContext context) {
         this.context = context;
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String username = auth != null ? auth.getName() : "";
-        String role = auth != null && auth.getAuthorities() != null
+        username = auth != null ? auth.getName() : "";
+        role = auth != null && auth.getAuthorities() != null
                 ? auth.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .filter(a -> a.startsWith("ROLE_"))
@@ -28,62 +42,82 @@ public class MainFrame extends JFrame {
                     .collect(Collectors.joining(", "))
                 : "";
 
-        setTitle("Trang chủ - Trung tâm Ngoại ngữ");
+        setTitle("Trung tâm Ngoại ngữ - " + username);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(520, 380);
+        setSize(900, 600);
         setLocationRelativeTo(null);
-        buildUI(username, role);
-    }
 
-    private void buildUI(String username, String role) {
-        JPanel main = new JPanel(new BorderLayout(15, 15));
-        main.setBorder(BorderFactory.createEmptyBorder(25, 25, 25, 25));
+        cardLayout = new CardLayout();
+        contentPanel = new JPanel(cardLayout);
 
-        JLabel title = new JLabel("Chào mừng, " + username, SwingConstants.CENTER);
-        title.setFont(title.getFont().deriveFont(Font.BOLD, 18f));
-        main.add(title, BorderLayout.NORTH);
+        JPanel sidebar = buildSidebar();
+        contentPanel.add(new HomePanel(username, role), CARD_HOME);
+        contentPanel.add(new StudentsPanel(), CARD_STUDENTS);
+        contentPanel.add(new TeachersPanel(), CARD_TEACHERS);
+        contentPanel.add(new CoursesPanel(), CARD_COURSES);
+        contentPanel.add(new ClassesPanel(), CARD_CLASSES);
 
-        JPanel center = new JPanel(new GridBagLayout());
-        center.setBorder(BorderFactory.createTitledBorder("Thông tin đăng nhập"));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
-        gbc.anchor = GridBagConstraints.WEST;
-
-        gbc.gridy = 0;
-        center.add(new JLabel("Tên đăng nhập:"), gbc);
-        gbc.gridx = 1;
-        center.add(new JLabel(username), gbc);
-        gbc.gridx = 0; gbc.gridy = 1;
-        center.add(new JLabel("Vai trò:"), gbc);
-        gbc.gridx = 1;
-        JLabel roleLabel = new JLabel(role);
-        roleLabel.setForeground(new Color(0, 100, 0));
-        roleLabel.setFont(roleLabel.getFont().deriveFont(Font.BOLD));
-        center.add(roleLabel, gbc);
-
-        main.add(center, BorderLayout.CENTER);
-
-        JTextArea info = new JTextArea(4, 40);
-        info.setEditable(false);
-        info.setLineWrap(true);
-        info.setFont(info.getFont().deriveFont(12f));
-        info.setText("Bạn có quyền truy cập các chức năng theo vai trò " + role + ".\n\n"
-                + "Hệ thống quản lý trung tâm ngoại ngữ — Project GK Nhóm 19.");
-        main.add(new JScrollPane(info), BorderLayout.SOUTH);
-
-        JMenuBar menuBar = new JMenuBar();
-        JMenu menu = new JMenu("Tài khoản");
-        JMenuItem logout = new JMenuItem("Đăng xuất");
-        logout.addActionListener(e -> {
-            SecurityContextHolder.clearContext();
-            dispose();
-            LoginFrame loginFrame = new LoginFrame(context);
-            loginFrame.setVisible(true);
-        });
-        menu.add(logout);
-        menuBar.add(menu);
-        setJMenuBar(menuBar);
+        JPanel main = new JPanel(new BorderLayout(0, 0));
+        main.add(sidebar, BorderLayout.WEST);
+        main.add(contentPanel, BorderLayout.CENTER);
 
         add(main);
+    }
+
+    private JPanel buildSidebar() {
+        JPanel sidebar = new JPanel();
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setBackground(new Color(240, 240, 245));
+        sidebar.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 0, 1, Color.LIGHT_GRAY),
+                new EmptyBorder(15, 10, 15, 10)
+        ));
+        int sidebarWidth = 180;
+        sidebar.setPreferredSize(new Dimension(sidebarWidth, 0));
+
+        JLabel logo = new JLabel("Menu");
+        logo.setFont(logo.getFont().deriveFont(Font.BOLD, 14f));
+        logo.setAlignmentX(Component.LEFT_ALIGNMENT);
+        logo.setBorder(new EmptyBorder(0, 0, 15, 0));
+        sidebar.add(logo);
+
+        sidebar.add(createMenuButton("Trang chủ", CARD_HOME));
+        sidebar.add(createMenuButton("Học viên", CARD_STUDENTS));
+        sidebar.add(createMenuButton("Giáo viên", CARD_TEACHERS));
+        sidebar.add(createMenuButton("Khóa học", CARD_COURSES));
+        sidebar.add(createMenuButton("Lớp học", CARD_CLASSES));
+
+        sidebar.add(Box.createVerticalGlue());
+
+        JButton logout = new JButton("Đăng xuất");
+        logout.setAlignmentX(Component.LEFT_ALIGNMENT);
+        logout.setMaximumSize(new Dimension(sidebarWidth - 20, 36));
+        logout.setBackground(new Color(200, 80, 80));
+        logout.setForeground(Color.WHITE);
+        logout.setFocusPainted(false);
+        logout.addActionListener(e -> doLogout());
+        sidebar.add(logout);
+
+        return sidebar;
+    }
+
+    private JButton createMenuButton(String text, String cardName) {
+        JButton btn = new JButton(text);
+        btn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        btn.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        btn.setBackground(null);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.addActionListener(e -> cardLayout.show(contentPanel, cardName));
+        return btn;
+    }
+
+    private void doLogout() {
+        SecurityContextHolder.clearContext();
+        dispose();
+        LoginFrame loginFrame = new LoginFrame(context);
+        loginFrame.setVisible(true);
     }
 }
