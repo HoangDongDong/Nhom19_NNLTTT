@@ -57,4 +57,6 @@ com.edulanguage
 ## Ví dụ luồng dữ liệu
 
 - **Đăng nhập (desktop)**: `LoginFrame` → `AuthenticationManager` → `CustomUserDetailsService` → **UserAccountService** → UserAccountRepository.
-- **Trang web cần danh sách học viên**: `StudentController` → **StudentService** → StudentRepository → trả về List&lt;Student&gt; cho view.
+- **Trang web danh sách học viên**: `StudentController` → **StudentService** → StudentRepository → trả về `List<Student>` cho view `student.html`.
+- **Trang web danh sách giáo viên**: `TeacherController` → **TeacherService** → TeacherRepository → view `teacher.html`.
+- **Trang web danh sách khóa học**: `CourseController` → **CourseService** → CourseRepository → view `courses.html`.

@@ -23,6 +23,7 @@
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="/home">Trang chủ</a></li>
                     <li class="nav-item" th:if="${isAdmin}"><a class="nav-link" href="/admin">Quản trị</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/courses">Khóa học</a></li>
                     <li class="nav-item" th:if="${isTeacher}"><a class="nav-link" href="/teacher">Giáo viên</a></li>
                     <li class="nav-item" th:if="${isStudent}"><a class="nav-link" href="/student">Học viên</a></li>
                     <li class="nav-item" th:if="${isStaff}"><a class="nav-link" href="/staff">Nhân viên</a></li>
