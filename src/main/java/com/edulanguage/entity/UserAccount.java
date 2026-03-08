@@ -13,12 +13,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "user_accounts")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -60,4 +58,19 @@ public class UserAccount extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "related_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Staff staff;
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+    public Long getRelatedId() { return relatedId; }
+    public void setRelatedId(Long relatedId) { this.relatedId = relatedId; }
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
+    public Teacher getTeacher() { return teacher; }
+    public void setTeacher(Teacher teacher) { this.teacher = teacher; }
+    public Staff getStaff() { return staff; }
+    public void setStaff(Staff staff) { this.staff = staff; }
 }

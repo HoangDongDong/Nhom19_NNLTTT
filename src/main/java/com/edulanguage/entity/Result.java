@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
@@ -11,12 +12,10 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "results")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -27,6 +26,7 @@ public class Result extends BaseEntity {
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id")
     @NotNull
     private Clazz clazz;
 
@@ -41,4 +41,15 @@ public class Result extends BaseEntity {
     @Size(max = 1000)
     @Column(name = "comment", length = 1000)
     private String comment;
+
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
+    public Clazz getClazz() { return clazz; }
+    public void setClazz(Clazz clazz) { this.clazz = clazz; }
+    public BigDecimal getScore() { return score; }
+    public void setScore(BigDecimal score) { this.score = score; }
+    public String getGrade() { return grade; }
+    public void setGrade(String grade) { this.grade = grade; }
+    public String getComment() { return comment; }
+    public void setComment(String comment) { this.comment = comment; }
 }

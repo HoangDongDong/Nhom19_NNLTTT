@@ -4,22 +4,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "invoices")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -44,6 +40,14 @@ public class Invoice extends BaseEntity {
     @Column(name = "status", length = 50)
     private String status;
 
-    @OneToMany(mappedBy = "enrollment", fetch = FetchType.LAZY)
-    private List<Payment> payments;
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
+    public Enrollment getEnrollment() { return enrollment; }
+    public void setEnrollment(Enrollment enrollment) { this.enrollment = enrollment; }
+    public BigDecimal getTotalAmount() { return totalAmount; }
+    public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
+    public LocalDateTime getIssueDate() { return issueDate; }
+    public void setIssueDate(LocalDateTime issueDate) { this.issueDate = issueDate; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

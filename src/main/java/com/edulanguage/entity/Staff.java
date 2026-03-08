@@ -13,12 +13,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "staffs")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -44,4 +42,15 @@ public class Staff extends BaseEntity {
 
     @OneToOne(mappedBy = "staff", fetch = FetchType.LAZY)
     private UserAccount userAccount;
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public Role getRole() { return role; }
+    public void setRole(Role role) { this.role = role; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public UserAccount getUserAccount() { return userAccount; }
+    public void setUserAccount(UserAccount userAccount) { this.userAccount = userAccount; }
 }

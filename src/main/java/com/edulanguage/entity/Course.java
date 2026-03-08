@@ -15,12 +15,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "courses")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -52,4 +50,19 @@ public class Course extends BaseEntity {
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     private List<Clazz> classes;
+
+    public String getCourseName() { return courseName; }
+    public void setCourseName(String courseName) { this.courseName = courseName; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public String getLevel() { return level; }
+    public void setLevel(String level) { this.level = level; }
+    public Integer getDuration() { return duration; }
+    public void setDuration(Integer duration) { this.duration = duration; }
+    public BigDecimal getFee() { return fee; }
+    public void setFee(BigDecimal fee) { this.fee = fee; }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
+    public List<Clazz> getClasses() { return classes; }
+    public void setClasses(List<Clazz> classes) { this.classes = classes; }
 }

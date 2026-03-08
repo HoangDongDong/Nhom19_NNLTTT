@@ -15,12 +15,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "payments")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -49,4 +47,17 @@ public class Payment extends BaseEntity {
     @Size(max = 50)
     @Column(name = "status", length = 50)
     private String status;
+
+    public Student getStudent() { return student; }
+    public void setStudent(Student student) { this.student = student; }
+    public Enrollment getEnrollment() { return enrollment; }
+    public void setEnrollment(Enrollment enrollment) { this.enrollment = enrollment; }
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
+    public LocalDateTime getPaymentDate() { return paymentDate; }
+    public void setPaymentDate(LocalDateTime paymentDate) { this.paymentDate = paymentDate; }
+    public PaymentMethod getPaymentMethod() { return paymentMethod; }
+    public void setPaymentMethod(PaymentMethod paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

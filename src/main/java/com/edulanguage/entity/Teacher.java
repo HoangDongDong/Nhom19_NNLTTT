@@ -16,12 +16,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "teachers")
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -57,4 +55,21 @@ public class Teacher extends BaseEntity {
 
     @OneToOne(mappedBy = "teacher", fetch = FetchType.LAZY)
     private UserAccount userAccount;
+
+    public String getFullName() { return fullName; }
+    public void setFullName(String fullName) { this.fullName = fullName; }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+    public String getSpecialty() { return specialty; }
+    public void setSpecialty(String specialty) { this.specialty = specialty; }
+    public LocalDateTime getHireDate() { return hireDate; }
+    public void setHireDate(LocalDateTime hireDate) { this.hireDate = hireDate; }
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
+    public List<Clazz> getClasses() { return classes; }
+    public void setClasses(List<Clazz> classes) { this.classes = classes; }
+    public UserAccount getUserAccount() { return userAccount; }
+    public void setUserAccount(UserAccount userAccount) { this.userAccount = userAccount; }
 }
