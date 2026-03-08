@@ -70,7 +70,7 @@ public class LoginFrame extends JFrame {
 
     private void doLogin() {
         String username = usernameField.getText().trim();
-        String password = new String(passwordField.getPassword());
+        String password = new String(passwordField.getPassword()).trim();
         if (username.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Nhập đầy đủ tên đăng nhập và mật khẩu.", "Lỗi", JOptionPane.WARNING_MESSAGE);
             return;
@@ -83,10 +83,17 @@ public class LoginFrame extends JFrame {
             MainFrame mainFrame = new MainFrame(context);
             mainFrame.setVisible(true);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Tên đăng nhập hoặc mật khẩu không đúng.",
-                    "Đăng nhập thất bại",
-                    JOptionPane.ERROR_MESSAGE);
+            String msg = "Tên đăng nhập hoặc mật khẩu không đúng.";
+            boolean isCreds = ex.getClass().getName().contains("BadCredentials")
+                    || ex.getClass().getName().contains("UsernameNotFoundException");
+            if (!isCreds && ex.getCause() != null) {
+                isCreds = ex.getCause().getClass().getName().contains("BadCredentials")
+                        || ex.getCause().getClass().getName().contains("UsernameNotFoundException");
+            }
+            if (!isCreds) {
+                msg += "\n\nChi tiết: " + ex.getClass().getSimpleName() + "\n" + ex.getMessage();
+            }
+            JOptionPane.showMessageDialog(this, msg, "Đăng nhập thất bại", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

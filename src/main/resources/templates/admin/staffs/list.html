@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nhân viên - Hệ thống</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/home">EduLanguage</a>
+            <a href="/admin" class="btn btn-outline-light btn-sm">Quản trị</a>
+            <a href="/home" class="btn btn-outline-light btn-sm">Trang chủ</a>
+        </div>
+    </nav>
+    <main class="container my-4">
+        <h4>Nhân viên</h4>
+        <p th:if="${message}" class="alert alert-success" th:text="${message}"></p>
+        <p th:if="${error}" class="alert alert-danger" th:text="${error}"></p>
+        <a th:href="@{/admin/staffs/new}" class="btn btn-primary mb-3">Thêm nhân viên</a>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Điện thoại</th>
+                        <th>Vai trò</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${staffs}">
+                        <td th:text="${s.id}">1</td>
+                        <td th:text="${s.fullName}">Nguyễn Văn A</td>
+                        <td th:text="${s.email}">-</td>
+                        <td th:text="${s.phone}">-</td>
+                        <td><span class="badge bg-secondary" th:text="${s.role}">STAFF</span></td>
+                        <td>
+                            <a th:href="@{/admin/staffs/edit/{id}(id=${s.id})}" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            <form th:action="@{/admin/staffs/delete/{id}(id=${s.id})}" method="post" class="d-inline">
+                                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa nhân viên này?');">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(staffs)}">
+                        <td colspan="6" class="text-center text-muted">Chưa có nhân viên nào.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <a href="/admin" class="btn btn-outline-secondary mt-2">← Về quản trị</a>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

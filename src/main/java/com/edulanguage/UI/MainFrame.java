@@ -2,6 +2,10 @@ package com.edulanguage.UI;
 
 import com.edulanguage.UI.panels.*;
 
+import com.edulanguage.service.BranchService;
+import com.edulanguage.service.RoomService;
+import com.edulanguage.service.StaffService;
+
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,12 +27,18 @@ public class MainFrame extends JFrame {
     private static final String CARD_TEACHERS = "teachers";
     private static final String CARD_COURSES = "courses";
     private static final String CARD_CLASSES = "classes";
+    private static final String CARD_BRANCHES = "branches";
+    private static final String CARD_ROOMS = "rooms";
+    private static final String CARD_STAFFS = "staffs";
 
     private final ConfigurableApplicationContext context;
     private final String username;
     private final String role;
     private final JPanel contentPanel;
     private final CardLayout cardLayout;
+    private JPanel placeholderBranches;
+    private JPanel placeholderRooms;
+    private JPanel placeholderStaffs;
 
     public MainFrame(ConfigurableApplicationContext context) {
         this.context = context;
@@ -56,12 +66,35 @@ public class MainFrame extends JFrame {
         contentPanel.add(new TeachersPanel(), CARD_TEACHERS);
         contentPanel.add(new CoursesPanel(), CARD_COURSES);
         contentPanel.add(new ClassesPanel(), CARD_CLASSES);
+        if (role != null && role.contains("ADMIN")) {
+            addAdminPanels();
+        }
 
         JPanel main = new JPanel(new BorderLayout(0, 0));
         main.add(sidebar, BorderLayout.WEST);
         main.add(contentPanel, BorderLayout.CENTER);
 
         add(main);
+    }
+
+    /** Tạo các panel Hệ thống cho ADMIN. Dùng placeholder — không gọi Service/DB khi đăng nhập. */
+    private void addAdminPanels() {
+        placeholderBranches = createPlaceholderPanel("Chi nhánh", CARD_BRANCHES);
+        placeholderRooms = createPlaceholderPanel("Phòng học", CARD_ROOMS);
+        placeholderStaffs = createPlaceholderPanel("Nhân viên", CARD_STAFFS);
+        contentPanel.add(placeholderBranches, CARD_BRANCHES);
+        contentPanel.add(placeholderRooms, CARD_ROOMS);
+        contentPanel.add(placeholderStaffs, CARD_STAFFS);
+    }
+
+    private JPanel createPlaceholderPanel(String title, String cardName) {
+        JPanel p = new JPanel(new BorderLayout(10, 10));
+        p.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JLabel lbl = new JLabel(title, SwingConstants.CENTER);
+        lbl.setFont(lbl.getFont().deriveFont(Font.BOLD, 16f));
+        p.add(lbl, BorderLayout.NORTH);
+        p.add(new JLabel("Nhấn '" + title + "' ở menu bên trái để mở", SwingConstants.CENTER), BorderLayout.CENTER);
+        return p;
     }
 
     private JPanel buildSidebar() {
@@ -86,6 +119,18 @@ public class MainFrame extends JFrame {
         sidebar.add(createMenuButton("Giáo viên", CARD_TEACHERS));
         sidebar.add(createMenuButton("Khóa học", CARD_COURSES));
         sidebar.add(createMenuButton("Lớp học", CARD_CLASSES));
+
+        if (role != null && role.contains("ADMIN")) {
+            sidebar.add(Box.createVerticalStrut(10));
+            JLabel sysLabel = new JLabel("Hệ thống");
+            sysLabel.setFont(sysLabel.getFont().deriveFont(Font.BOLD, 12f));
+            sysLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            sysLabel.setForeground(new Color(80, 80, 80));
+            sidebar.add(sysLabel);
+            sidebar.add(createAdminMenuButton("Chi nhánh", CARD_BRANCHES));
+            sidebar.add(createAdminMenuButton("Phòng học", CARD_ROOMS));
+            sidebar.add(createAdminMenuButton("Nhân viên", CARD_STAFFS));
+        }
 
         sidebar.add(Box.createVerticalGlue());
 
@@ -112,6 +157,47 @@ public class MainFrame extends JFrame {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.addActionListener(e -> cardLayout.show(contentPanel, cardName));
         return btn;
+    }
+
+    /** Nút menu ADMIN: khi click sẽ tải panel CRUD (nếu còn placeholder) rồi hiển thị. */
+    private JButton createAdminMenuButton(String text, String cardName) {
+        JButton btn = new JButton(text);
+        btn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        btn.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        btn.setBackground(null);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.addActionListener(e -> {
+            ensureAdminPanelLoaded(cardName);
+            cardLayout.show(contentPanel, cardName);
+        });
+        return btn;
+    }
+
+    /** Tải panel CRUD thật thay placeholder khi user click menu (lazy load). */
+    private void ensureAdminPanelLoaded(String cardName) {
+        try {
+            if (CARD_BRANCHES.equals(cardName) && placeholderBranches != null) {
+                contentPanel.remove(placeholderBranches);
+                contentPanel.add(new BranchesPanel(context.getBean(BranchService.class)), CARD_BRANCHES);
+                placeholderBranches = null;
+            } else if (CARD_ROOMS.equals(cardName) && placeholderRooms != null) {
+                contentPanel.remove(placeholderRooms);
+                contentPanel.add(new RoomsPanel(context.getBean(RoomService.class)), CARD_ROOMS);
+                placeholderRooms = null;
+            } else if (CARD_STAFFS.equals(cardName) && placeholderStaffs != null) {
+                contentPanel.remove(placeholderStaffs);
+                contentPanel.add(new StaffsPanel(context.getBean(StaffService.class)), CARD_STAFFS);
+                placeholderStaffs = null;
+            }
+            contentPanel.revalidate();
+            contentPanel.repaint();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi tải dữ liệu: " + ex.getMessage()
+                    + "\n\n(Ví dụ: chạy sql/create_branches.sql nếu bảng branches chưa có)", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void doLogout() {
