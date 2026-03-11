@@ -1,7 +1,7 @@
 package com.edulanguage.service.impl;
 
+import com.edulanguage.dao.RoomDao;
 import com.edulanguage.entity.Room;
-import com.edulanguage.repository.RoomRepository;
 import com.edulanguage.service.RoomService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,33 +12,33 @@ import java.util.Optional;
 @Service
 public class RoomServiceImpl implements RoomService {
 
-    private final RoomRepository roomRepository;
+    private final RoomDao roomDao;
 
-    public RoomServiceImpl(RoomRepository roomRepository) {
-        this.roomRepository = roomRepository;
+    public RoomServiceImpl(RoomDao roomDao) {
+        this.roomDao = roomDao;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Room> findAll() {
-        return roomRepository.findAll();
+        return roomDao.findAll();
     }
 
     @Override
     @Transactional(readOnly = true)
     public Optional<Room> findById(Long id) {
-        return roomRepository.findById(id);
+        return roomDao.findById(id);
     }
 
     @Override
     @Transactional
     public Room save(Room room) {
-        return roomRepository.save(room);
+        return roomDao.save(room);
     }
 
     @Override
     @Transactional
     public void deleteById(Long id) {
-        roomRepository.deleteById(id);
+        roomDao.deleteById(id);
     }
 }
