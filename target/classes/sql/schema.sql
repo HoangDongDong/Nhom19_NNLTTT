@@ -25,9 +25,10 @@ IF OBJECT_ID('dbo.promo_codes',  'U') IS NOT NULL DROP TABLE dbo.promo_codes;
 PRINT N'[1/15] Tạo bảng branches...';
 CREATE TABLE dbo.branches (
     id          BIGINT IDENTITY(1,1) PRIMARY KEY,
-    name        NVARCHAR(100) NOT NULL,
+    branch_name NVARCHAR(100) NOT NULL,
     address     NVARCHAR(255),
     phone       NVARCHAR(20),
+    status      NVARCHAR(20) DEFAULT 'ACTIVE',
     created_at  DATETIME2 NOT NULL DEFAULT GETDATE(),
     updated_at  DATETIME2 NOT NULL DEFAULT GETDATE()
 );
@@ -46,9 +47,9 @@ CREATE TABLE dbo.rooms (
 PRINT N'[3/15] Tạo bảng courses...';
 CREATE TABLE dbo.courses (
     id              BIGINT IDENTITY(1,1) PRIMARY KEY,
-    course_name     NVARCHAR(150) NOT NULL,
-    description     NVARCHAR(MAX),
-    level           NVARCHAR(20),
+    course_name     NVARCHAR(100) NOT NULL,
+    description     NVARCHAR(1000),
+    level           NVARCHAR(50),
     duration_hours  INT,
     fee             DECIMAL(14,2),
     status          NVARCHAR(20) DEFAULT 'ACTIVE',
@@ -61,7 +62,7 @@ CREATE TABLE dbo.staffs (
     id          BIGINT IDENTITY(1,1) PRIMARY KEY,
     full_name   NVARCHAR(100) NOT NULL,
     role        NVARCHAR(20),
-    phone       NVARCHAR(20)  UNIQUE,
+    phone       NVARCHAR(20),
     email       NVARCHAR(100) UNIQUE,
     created_at  DATETIME2 NOT NULL DEFAULT GETDATE(),
     updated_at  DATETIME2 NOT NULL DEFAULT GETDATE()
@@ -71,10 +72,10 @@ PRINT N'[5/15] Tạo bảng teachers...';
 CREATE TABLE dbo.teachers (
     id          BIGINT IDENTITY(1,1) PRIMARY KEY,
     full_name   NVARCHAR(100) NOT NULL,
-    phone       NVARCHAR(20)  UNIQUE,
+    phone       NVARCHAR(20),
     email       NVARCHAR(100) UNIQUE,
     specialty   NVARCHAR(100),
-    hire_date   DATE,
+    hire_date   DATETIME2,
     status      NVARCHAR(20)  DEFAULT 'ACTIVE',
     created_at  DATETIME2 NOT NULL DEFAULT GETDATE(),
     updated_at  DATETIME2 NOT NULL DEFAULT GETDATE()
@@ -128,7 +129,8 @@ CREATE TABLE dbo.enrollments (
     student_id      BIGINT REFERENCES dbo.students(id),
     class_id        BIGINT REFERENCES dbo.classes(id),
     enrollment_date DATETIME2,
-    status          NVARCHAR(20) DEFAULT 'ACTIVE',
+    status          NVARCHAR(50) DEFAULT 'ACTIVE',
+    result          NVARCHAR(20),
     created_at      DATETIME2 NOT NULL DEFAULT GETDATE(),
     updated_at      DATETIME2 NOT NULL DEFAULT GETDATE()
 );
@@ -178,8 +180,8 @@ CREATE TABLE dbo.payments (
     enrollment_id  BIGINT        REFERENCES dbo.enrollments(id),
     amount         DECIMAL(14,2),
     payment_date   DATETIME2,
-    payment_method NVARCHAR(50),
-    status         NVARCHAR(20)  DEFAULT 'PENDING',
+    payment_method NVARCHAR(30),
+    status         NVARCHAR(50)  DEFAULT 'PENDING',
     created_at     DATETIME2 NOT NULL DEFAULT GETDATE(),
     updated_at     DATETIME2 NOT NULL DEFAULT GETDATE()
 );
@@ -189,9 +191,9 @@ CREATE TABLE dbo.results (
     id         BIGINT IDENTITY(1,1) PRIMARY KEY,
     student_id BIGINT REFERENCES dbo.students(id),
     class_id   BIGINT REFERENCES dbo.classes(id),
-    score      DECIMAL(5,2),
+    score      DECIMAL(7,2),
     grade      NVARCHAR(20),
-    comment    NVARCHAR(500),
+    comment    NVARCHAR(1000),
     created_at DATETIME2 NOT NULL DEFAULT GETDATE(),
     updated_at DATETIME2 NOT NULL DEFAULT GETDATE()
 );

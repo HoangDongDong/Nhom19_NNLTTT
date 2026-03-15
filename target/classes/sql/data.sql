@@ -85,22 +85,20 @@ GO
 -- =========================================
 IF NOT EXISTS (SELECT 1 FROM user_accounts WHERE username = 'admin')
 BEGIN
-    -- BCrypt hash của mật khẩu '123'
-    -- Sinh bằng: new BCryptPasswordEncoder().encode("123")
-    DECLARE @bcrypt123 NVARCHAR(255) = '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt.X3me';
+    -- Mật khẩu dạng text thuần: '123' (dùng NoOpPasswordEncoder)
     INSERT INTO user_accounts (username, password_hash, role, related_id, created_at, updated_at) VALUES
     -- Admin: trỏ vào staffs.id = 1
-    ('admin',    @bcrypt123, 'ADMIN',   1, GETDATE(), GETDATE()),
+    ('admin',    '123', 'ADMIN',   1, GETDATE(), GETDATE()),
     -- Staff: trỏ vào staffs.id = 2
-    ('staff1',   @bcrypt123, 'STAFF',   2, GETDATE(), GETDATE()),
+    ('staff1',   '123', 'STAFF',   2, GETDATE(), GETDATE()),
     -- Teachers: trỏ vào teachers.id
-    ('teacher1', @bcrypt123, 'TEACHER', 1, GETDATE(), GETDATE()),
-    ('teacher2', @bcrypt123, 'TEACHER', 2, GETDATE(), GETDATE()),
+    ('teacher1', '123', 'TEACHER', 1, GETDATE(), GETDATE()),
+    ('teacher2', '123', 'TEACHER', 2, GETDATE(), GETDATE()),
     -- Students: trỏ vào students.id
-    ('student1', @bcrypt123, 'STUDENT', 1, GETDATE(), GETDATE()),
-    ('student2', @bcrypt123, 'STUDENT', 2, GETDATE(), GETDATE()),
-    ('student3', @bcrypt123, 'STUDENT', 3, GETDATE(), GETDATE());
-    PRINT N'  ✓ Inserted user_accounts (password = 123, BCrypt-encoded)';
+    ('student1', '123', 'STUDENT', 1, GETDATE(), GETDATE()),
+    ('student2', '123', 'STUDENT', 2, GETDATE(), GETDATE()),
+    ('student3', '123', 'STUDENT', 3, GETDATE(), GETDATE());
+    PRINT N'  ✓ Inserted user_accounts (password = 123, plain text)';
 END
 GO
 

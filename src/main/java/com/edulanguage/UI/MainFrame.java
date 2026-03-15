@@ -8,6 +8,9 @@ import com.edulanguage.service.RoomService;
 import com.edulanguage.service.StaffService;
 import com.edulanguage.service.StudentService;
 import com.edulanguage.service.FinanceService;
+import com.edulanguage.service.UserAccountService;
+import com.edulanguage.entity.UserAccount;
+import com.edulanguage.entity.enums.Role;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.security.core.Authentication;
@@ -45,6 +48,7 @@ public class MainFrame extends JFrame {
     private JPanel placeholderStaffs;
     private JPanel placeholderInvoices;
     private JPanel placeholderStudents;
+    private final Long teacherId;
 
     public MainFrame(ConfigurableApplicationContext context) {
         this.context = context;
@@ -58,6 +62,19 @@ public class MainFrame extends JFrame {
                     .collect(Collectors.joining(", "))
                 : "";
 
+        Long tmpTeacherId = null;
+        try {
+            if (role != null && role.contains("TEACHER")) {
+                UserAccountService uaService = context.getBean(UserAccountService.class);
+                UserAccount account = uaService.findByUsername(username).orElse(null);
+                if (account != null && account.getRole() == Role.TEACHER) {
+                    tmpTeacherId = account.getRelatedId();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        this.teacherId = tmpTeacherId;
+
         setTitle("Trung tâm Ngoại ngữ - " + username);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(900, 600);
@@ -68,11 +85,13 @@ public class MainFrame extends JFrame {
 
         JPanel sidebar = buildSidebar();
         contentPanel.add(new HomePanel(username, role), CARD_HOME);
-        placeholderStudents = createPlaceholderPanel("Học viên", CARD_STUDENTS);
-        contentPanel.add(placeholderStudents, CARD_STUDENTS);
-        contentPanel.add(new TeachersPanel(), CARD_TEACHERS);
-        contentPanel.add(new CoursesPanel(), CARD_COURSES);
-        contentPanel.add(new ClassesPanel(), CARD_CLASSES);
+        if (role == null || !role.contains("STUDENT")) {
+            placeholderStudents = createPlaceholderPanel("Học viên", CARD_STUDENTS);
+            contentPanel.add(placeholderStudents, CARD_STUDENTS);
+        }
+        contentPanel.add(new TeachersPanel(context, username, role), CARD_TEACHERS);
+        contentPanel.add(new CoursesPanel(context, username, role, teacherId), CARD_COURSES);
+        contentPanel.add(new ClassesPanel(context, role, teacherId), CARD_CLASSES);
         if (role != null && role.contains("ADMIN")) {
             addAdminPanels();
         }
@@ -124,8 +143,13 @@ public class MainFrame extends JFrame {
         sidebar.add(logo);
 
         sidebar.add(createMenuButton("Trang chủ", CARD_HOME));
-        sidebar.add(createLazyMenuButton("Học viên", CARD_STUDENTS));
-        sidebar.add(createMenuButton("Giáo viên", CARD_TEACHERS));
+        if (role == null || !role.contains("STUDENT")) {
+            sidebar.add(createLazyMenuButton("Học viên", CARD_STUDENTS));
+        }
+        // Ẩn menu Giáo viên cho chính giáo viên (chỉ student/staff/admin mới cần)
+        if (role == null || (!role.contains("TEACHER"))) {
+            sidebar.add(createMenuButton("Giáo viên", CARD_TEACHERS));
+        }
         sidebar.add(createMenuButton("Khóa học", CARD_COURSES));
         sidebar.add(createMenuButton("Lớp học", CARD_CLASSES));
 
@@ -212,7 +236,9 @@ public class MainFrame extends JFrame {
                         context.getBean(StudentService.class),
                         context.getBean(PlacementTestService.class),
                         context.getBean(com.edulanguage.service.EnrollmentService.class),
-                        context.getBean(com.edulanguage.dao.ClazzDao.class)), CARD_STUDENTS);
+                        context.getBean(com.edulanguage.dao.ClazzDao.class),
+                        role,
+                        teacherId), CARD_STUDENTS);
                 placeholderStudents = null;
             }
             contentPanel.revalidate();

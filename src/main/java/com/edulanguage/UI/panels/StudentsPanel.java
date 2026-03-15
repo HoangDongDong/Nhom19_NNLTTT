@@ -28,6 +28,8 @@ public class StudentsPanel extends JPanel {
     private final PlacementTestService placementTestService;
     private final com.edulanguage.service.EnrollmentService enrollmentService;
     private final com.edulanguage.dao.ClazzDao clazzDao;
+    private final String currentRole;
+    private final Long currentTeacherId;
     private final DefaultTableModel tableModel;
     private final JTable table;
     private static final String[] COLUMNS = {
@@ -35,12 +37,15 @@ public class StudentsPanel extends JPanel {
     };
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    public StudentsPanel(StudentService studentService, PlacementTestService placementTestService, 
-            com.edulanguage.service.EnrollmentService enrollmentService, com.edulanguage.dao.ClazzDao clazzDao) {
+    public StudentsPanel(StudentService studentService, PlacementTestService placementTestService,
+            com.edulanguage.service.EnrollmentService enrollmentService, com.edulanguage.dao.ClazzDao clazzDao,
+            String currentRole, Long currentTeacherId) {
         this.studentService = studentService;
         this.placementTestService = placementTestService;
         this.enrollmentService = enrollmentService;
         this.clazzDao = clazzDao;
+        this.currentRole = currentRole;
+        this.currentTeacherId = currentTeacherId;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
@@ -66,11 +71,19 @@ public class StudentsPanel extends JPanel {
         JButton btnDelete = new JButton("Xóa");
         JButton btnTest   = new JButton("Test đầu vào");
         JButton btnEnroll = new JButton("Ghi danh");
+        JButton btnViewClasses = new JButton("Lớp đang học");
         btnAdd.addActionListener(e -> doAdd());
         btnEdit.addActionListener(e -> doEdit());
         btnDelete.addActionListener(e -> doDelete());
         btnTest.addActionListener(e -> doPlacementTest());
         btnEnroll.addActionListener(e -> doEnroll());
+        btnViewClasses.addActionListener(e -> showClassesOfSelectedStudent());
+        // Giáo viên chỉ xem danh sách, không CRUD
+        boolean isTeacher = currentRole != null && currentRole.contains("TEACHER");
+        btnAdd.setEnabled(!isTeacher);
+        btnEdit.setEnabled(!isTeacher);
+        btnDelete.setEnabled(!isTeacher);
+
         toolbar.add(btnAdd);
         toolbar.add(btnEdit);
         toolbar.add(btnDelete);
@@ -78,6 +91,8 @@ public class StudentsPanel extends JPanel {
         toolbar.add(btnTest);
         toolbar.add(Box.createHorizontalStrut(5));
         toolbar.add(btnEnroll);
+        toolbar.add(Box.createHorizontalStrut(5));
+        toolbar.add(btnViewClasses);
         add(toolbar, BorderLayout.SOUTH);
 
         refreshTable();
@@ -88,17 +103,42 @@ public class StudentsPanel extends JPanel {
      * ════════════════════════════════════════════ */
     private void refreshTable() {
         tableModel.setRowCount(0);
-        List<Student> list = studentService.findAll();
-        for (Student s : list) {
-            tableModel.addRow(new Object[]{
-                    s.getId(),
-                    s.getFullName(),
-                    s.getDateOfBirth() != null ? s.getDateOfBirth().format(DATE_FMT) : "",
-                    s.getGender() != null ? genderLabel(s.getGender()) : "",
-                    s.getPhone() != null ? s.getPhone() : "",
-                    s.getEmail() != null ? s.getEmail() : "",
-                    s.getStatus() != null ? s.getStatus().name() : ""
-            });
+
+        boolean isTeacher = currentRole != null && currentRole.contains("TEACHER") && currentTeacherId != null;
+        if (isTeacher) {
+            // Lấy tất cả lớp mà giáo viên này dạy, rồi gom học viên từ các ghi danh
+            java.util.List<com.edulanguage.entity.Clazz> classes =
+                    clazzDao.findByTeacherId(currentTeacherId);
+            java.util.Set<Long> added = new java.util.HashSet<>();
+            for (com.edulanguage.entity.Clazz c : classes) {
+                if (c.getEnrollments() == null) continue;
+                for (com.edulanguage.entity.Enrollment e : c.getEnrollments()) {
+                    Student s = e.getStudent();
+                    if (s == null || s.getId() == null || !added.add(s.getId())) continue;
+                    tableModel.addRow(new Object[]{
+                            s.getId(),
+                            s.getFullName(),
+                            s.getDateOfBirth() != null ? s.getDateOfBirth().format(DATE_FMT) : "",
+                            s.getGender() != null ? genderLabel(s.getGender()) : "",
+                            s.getPhone() != null ? s.getPhone() : "",
+                            s.getEmail() != null ? s.getEmail() : "",
+                            s.getStatus() != null ? s.getStatus().name() : ""
+                    });
+                }
+            }
+        } else {
+            List<Student> list = studentService.findAll();
+            for (Student s : list) {
+                tableModel.addRow(new Object[]{
+                        s.getId(),
+                        s.getFullName(),
+                        s.getDateOfBirth() != null ? s.getDateOfBirth().format(DATE_FMT) : "",
+                        s.getGender() != null ? genderLabel(s.getGender()) : "",
+                        s.getPhone() != null ? s.getPhone() : "",
+                        s.getEmail() != null ? s.getEmail() : "",
+                        s.getStatus() != null ? s.getStatus().name() : ""
+                });
+            }
         }
     }
 
@@ -532,5 +572,51 @@ public class StudentsPanel extends JPanel {
                 clazzDao
         );
         dialog.setVisible(true);
+    }
+
+    /** Hiển thị các lớp mà học viên đang/đã ghi danh (dùng cho ADMIN/STAFF). */
+    private void showClassesOfSelectedStudent() {
+        int row = table.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một học viên.", "Thông báo",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        Long studentId = (Long) tableModel.getValueAt(row, 0);
+        String studentName = (String) tableModel.getValueAt(row, 1);
+
+        java.util.List<com.edulanguage.entity.Enrollment> enrollments =
+                enrollmentService.findByStudentId(studentId);
+        if (enrollments == null || enrollments.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Học viên hiện chưa được ghi danh lớp nào.",
+                    "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String[] cols = {"ID lớp", "Tên lớp", "Khóa học", "Trạng thái ghi danh"};
+        DefaultTableModel model = new DefaultTableModel(cols, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        for (com.edulanguage.entity.Enrollment e : enrollments) {
+            com.edulanguage.entity.Clazz clazz = e.getClazz();
+            if (clazz == null) continue;
+            String courseName = clazz.getCourse() != null ? clazz.getCourse().getCourseName() : "";
+            model.addRow(new Object[]{
+                    clazz.getId(),
+                    clazz.getClassName(),
+                    courseName,
+                    e.getStatus()
+            });
+        }
+
+        JTable tbl = new JTable(model);
+        tbl.getTableHeader().setReorderingAllowed(false);
+        JScrollPane scroll = new JScrollPane(tbl);
+        scroll.setPreferredSize(new Dimension(600, 300));
+
+        JOptionPane.showMessageDialog(this, scroll,
+                "Lớp học của học viên: " + studentName,
+                JOptionPane.PLAIN_MESSAGE);
     }
 }
