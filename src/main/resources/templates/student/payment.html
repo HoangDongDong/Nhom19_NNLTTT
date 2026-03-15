@@ -27,12 +27,20 @@
                         </div>
                     </div>
 
-                    <!-- Khu vực nhập Mã khuyến mại -->
+                    <!-- Khu vực chọn/nhập Mã khuyến mại -->
                     <div class="mb-4 p-3 border rounded" style="background: #fefce8;">
                         <label class="form-label fw-bold mb-2"><i class="bi bi-tags text-warning me-1"></i> Mã khuyến mại</label>
-                        <div class="input-group">
+                        <div class="mb-2">
+                            <select id="promoCodeSelect" class="form-select" onchange="onPromoSelectChange()">
+                                <option value="">-- Không dùng mã --</option>
+                                <option th:each="p : ${promoCodes}" th:value="${p.code}" 
+                                        th:text="${p.code} + ' (Giảm ' + ${p.discountPercentage} + '%)'">WELCOME10 (Giảm 10%)</option>
+                            </select>
+                        </div>
+                        <small class="text-muted">Hoặc nhập mã thủ công:</small>
+                        <div class="input-group mt-1">
                             <input type="text" id="promoCodeInput" class="form-control font-monospace text-uppercase" 
-                                   placeholder="Nhập mã khuyến mại (VD: SUMMER2026)" style="letter-spacing:1px;">
+                                   placeholder="Nhập mã nếu không có trong danh sách" style="letter-spacing:1px;">
                             <button type="button" id="applyPromoBtn" class="btn btn-warning" onclick="applyPromo()">
                                 <i class="bi bi-check2-circle"></i> Áp dụng
                             </button>
@@ -92,51 +100,50 @@
         return new Intl.NumberFormat('vi-VN').format(num) + ' VNĐ';
     }
 
-    function applyPromo() {
-        const code = document.getElementById('promoCodeInput').value.trim();
+    function doApplyPromo(code) {
         if (!code) {
-            showPromoResult('Vui lòng nhập mã khuyến mại.', 'danger');
+            document.getElementById('hiddenPromoCode').value = '';
+            document.getElementById('discountInfo').style.display = 'none';
+            document.getElementById('promoCodeSelect').value = '';
+            document.getElementById('promoResult').style.display = 'none';
             return;
         }
-
         const btn = document.getElementById('applyPromoBtn');
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang kiểm tra...';
-
-        // Gọi API kiểm tra mã
         const headers = { 'Content-Type': 'application/json' };
         headers[csrfHeader] = csrfToken;
-
-        fetch('/api/promos/check?code=' + encodeURIComponent(code) + '&amount=' + originalAmount, {
-            method: 'GET',
-            headers: headers
-        })
+        fetch('/api/promos/check?code=' + encodeURIComponent(code) + '&amount=' + originalAmount, { method: 'GET', headers: headers })
         .then(r => r.json())
         .then(data => {
             btn.disabled = false;
             btn.innerHTML = '<i class="bi bi-check2-circle"></i> Áp dụng';
-
             if (data.valid) {
-                // Mã hợp lệ
                 document.getElementById('hiddenPromoCode').value = code.toUpperCase();
                 document.getElementById('displayOriginal').textContent = formatVND(originalAmount);
                 document.getElementById('discountPercent').textContent = data.percentage + '%';
                 document.getElementById('displayDiscount').textContent = '- ' + formatVND(data.discountAmount);
                 document.getElementById('displayFinal').textContent = formatVND(data.finalAmount);
                 document.getElementById('discountInfo').style.display = 'block';
-                showPromoResult('✅ Mã khuyến mại <strong>' + code.toUpperCase() + '</strong> đã được áp dụng!', 'success');
+                showPromoResult('✅ Mã <strong>' + code.toUpperCase() + '</strong> đã được áp dụng!', 'success');
             } else {
-                // Mã không hợp lệ
                 document.getElementById('hiddenPromoCode').value = '';
                 document.getElementById('discountInfo').style.display = 'none';
                 showPromoResult('❌ ' + data.message, 'danger');
             }
         })
-        .catch(err => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-check2-circle"></i> Áp dụng';
-            showPromoResult('Lỗi kết nối. Vui lòng thử lại.', 'danger');
-        });
+        .catch(() => { btn.disabled = false; btn.innerHTML = '<i class="bi bi-check2-circle"></i> Áp dụng'; showPromoResult('Lỗi kết nối.', 'danger'); });
+    }
+
+    function onPromoSelectChange() {
+        const code = document.getElementById('promoCodeSelect').value?.trim() || '';
+        if (code) doApplyPromo(code); else doApplyPromo(null);
+    }
+
+    function applyPromo() {
+        const code = document.getElementById('promoCodeInput').value.trim();
+        if (!code) { showPromoResult('Vui lòng chọn hoặc nhập mã khuyến mại.', 'danger'); return; }
+        doApplyPromo(code);
     }
 
     function showPromoResult(html, type) {

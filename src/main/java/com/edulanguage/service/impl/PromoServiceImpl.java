@@ -29,6 +29,12 @@ public class PromoServiceImpl implements PromoService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<PromoCode> findActivePromos() {
+        return promoCodeRepository.findByIsActiveTrueOrderByCodeAsc();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<PromoCode> findById(Long id) {
         return promoCodeRepository.findById(id);
     }

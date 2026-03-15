@@ -13,6 +13,9 @@ public interface PromoService {
 
     List<PromoCode> findAll();
 
+    /** Lấy danh sách mã đang kích hoạt (dùng cho dropdown khi thanh toán). */
+    List<PromoCode> findActivePromos();
+
     Optional<PromoCode> findById(Long id);
 
     Optional<PromoCode> findByCode(String code);

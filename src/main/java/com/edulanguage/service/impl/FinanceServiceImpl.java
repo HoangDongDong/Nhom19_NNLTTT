@@ -9,17 +9,20 @@ import com.edulanguage.entity.Payment;
 import com.edulanguage.entity.enums.PaymentMethod;
 import com.edulanguage.service.FinanceService;
 import com.edulanguage.service.PromoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class FinanceServiceImpl implements FinanceService {
+
+    private static final Logger log = LoggerFactory.getLogger(FinanceServiceImpl.class);
 
     private final InvoiceDao invoiceDao;
     private final PaymentDao paymentDao;
@@ -47,6 +50,24 @@ public class FinanceServiceImpl implements FinanceService {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<Invoice> findInvoiceByIdForPrint(Long id) {
+        return invoiceDao.findById(id).map(inv -> {
+            if (inv.getStudent() != null) inv.getStudent().getFullName();
+            if (inv.getEnrollment() != null) {
+                if (inv.getEnrollment().getClazz() != null) {
+                    inv.getEnrollment().getClazz().getClassName();
+                    if (inv.getEnrollment().getClazz().getCourse() != null) {
+                        inv.getEnrollment().getClazz().getCourse().getCourseName();
+                        inv.getEnrollment().getClazz().getCourse().getFee();
+                    }
+                }
+            }
+            return inv;
+        });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<Invoice> findUnpaidInvoices() {
         return invoiceDao.findByStatus("UNPAID");
     }
@@ -60,21 +81,11 @@ public class FinanceServiceImpl implements FinanceService {
     @Override
     public BigDecimal calculateDiscountAmount(BigDecimal originalFee, String discountCode) {
         if (discountCode == null || discountCode.isBlank()) return BigDecimal.ZERO;
-
-        BigDecimal discountPercentage = BigDecimal.ZERO;
-        switch (discountCode.toUpperCase().trim()) {
-            case "SUMMER20":
-                discountPercentage = new BigDecimal("0.20");
-                break;
-            case "ALUMNI":
-                discountPercentage = new BigDecimal("0.10");
-                break;
-            case "FREE":
-                discountPercentage = new BigDecimal("1.00");
-                break;
+        try {
+            return promoService.calculateDiscount(discountCode, originalFee);
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
         }
-
-        return originalFee.multiply(discountPercentage).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Override
@@ -87,11 +98,20 @@ public class FinanceServiceImpl implements FinanceService {
         Invoice invoice = invoiceDao.findById(invoiceId)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy Hóa đơn!"));
 
+        if (invoice.getEnrollment() == null) {
+            throw new IllegalArgumentException("Hóa đơn chưa liên kết với ghi danh. Vui lòng kiểm tra dữ liệu.");
+        }
+
         if ("PAID".equals(invoice.getStatus())) {
             throw new IllegalArgumentException("Hóa đơn đã được thanh toán đầy đủ!");
         }
 
-        BigDecimal discountAmount = calculateDiscountAmount(invoice.getTotalAmount(), discountCode);
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        if (discountCode != null && !discountCode.isBlank()) {
+            discountAmount = promoService.calculateDiscount(discountCode, invoice.getTotalAmount());
+            invoice.setAppliedPromoCode(discountCode.trim().toUpperCase());
+            invoice.setPromoDiscountAmount(discountAmount);
+        }
         BigDecimal amountToPay = invoice.getTotalAmount().subtract(discountAmount);
 
         List<Payment> pastPayments = paymentDao.findByEnrollmentId(invoice.getEnrollment().getId());
@@ -108,7 +128,8 @@ public class FinanceServiceImpl implements FinanceService {
         payment.setPaymentDate(LocalDateTime.now());
         payment.setPaymentMethod(paymentMethod);
         payment.setStatus("COMPLETED");
-        paymentDao.save(payment);
+        Payment saved = paymentDao.save(payment);
+        log.info("Payment saved: id={}, enrollmentId={}, amount={}", saved.getId(), invoice.getEnrollment().getId(), amount);
 
         if (newTotalPaid.compareTo(amountToPay) >= 0) {
             invoice.setStatus("PAID");
@@ -118,7 +139,10 @@ public class FinanceServiceImpl implements FinanceService {
         } else {
             invoice.setStatus("PARTIAL");
         }
-        
+
+        if (discountCode != null && !discountCode.isBlank()) {
+            promoService.incrementUsage(discountCode);
+        }
         invoiceDao.save(invoice);
     }
 

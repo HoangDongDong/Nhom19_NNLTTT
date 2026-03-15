@@ -9,6 +9,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,6 +36,10 @@ public class Attendance extends BaseEntity {
     @Column(name = "status", length = 20)
     private AttendanceStatus status;
 
+    @Size(max = 255)
+    @Column(name = "note", length = 255)
+    private String note;
+
     public Student getStudent() { return student; }
     public void setStudent(Student student) { this.student = student; }
     public Clazz getClazz() { return clazz; }
@@ -43,4 +48,6 @@ public class Attendance extends BaseEntity {
     public void setDate(LocalDate date) { this.date = date; }
     public AttendanceStatus getStatus() { return status; }
     public void setStatus(AttendanceStatus status) { this.status = status; }
+    public String getNote() { return note; }
+    public void setNote(String note) { this.note = note; }
 }

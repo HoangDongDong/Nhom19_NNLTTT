@@ -1,25 +1,30 @@
 package com.edulanguage.UI.panels;
 
 import com.edulanguage.entity.Invoice;
+import com.edulanguage.entity.PromoCode;
 import com.edulanguage.entity.enums.PaymentMethod;
 import com.edulanguage.service.FinanceService;
+import com.edulanguage.service.PromoService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class PaymentDialog extends JDialog {
 
     private final Invoice invoice;
     private final FinanceService financeService;
+    private final PromoService promoService;
     private final Runnable onSuccess;
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    public PaymentDialog(Frame owner, Invoice invoice, FinanceService financeService, Runnable onSuccess) {
+    public PaymentDialog(Frame owner, Invoice invoice, FinanceService financeService, PromoService promoService, Runnable onSuccess) {
         super(owner, "Thanh Toán Hóa Đơn", true);
         this.invoice = invoice;
         this.financeService = financeService;
+        this.promoService = promoService;
         this.onSuccess = onSuccess;
 
         initUI();
@@ -58,14 +63,24 @@ public class PaymentDialog extends JDialog {
         p.add(lblOriginalFee, gbc);
         row++;
 
-        // Discount section
-        gbc.gridx = 0; gbc.gridy = row; p.add(new JLabel("Mã giảm giá (nếu có):"), gbc);
-        gbc.gridx = 1; 
-        JPanel discountPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JTextField tfAmount = new JTextField(invoice.getTotalAmount().toPlainString(), 15);
+
+        // Discount section - dropdown + manual input
+        gbc.gridx = 0; gbc.gridy = row; p.add(new JLabel("Mã giảm giá:"), gbc);
+        gbc.gridx = 1;
+        JComboBox<String> promoCombo = new JComboBox<>();
+        promoCombo.addItem("-- Không dùng mã --");
+        List<PromoCode> promos = promoService.findActivePromos();
+        for (PromoCode pc : promos) {
+            promoCombo.addItem(pc.getCode() + " (Giảm " + pc.getDiscountPercentage() + "%)");
+        }
         JTextField tfDiscount = new JTextField(10);
         JButton btnApply = new JButton("Áp dụng");
-        discountPanel.add(tfDiscount);
+        JPanel discountPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        discountPanel.add(promoCombo);
         discountPanel.add(Box.createHorizontalStrut(10));
+        discountPanel.add(tfDiscount);
+        discountPanel.add(Box.createHorizontalStrut(5));
         discountPanel.add(btnApply);
         p.add(discountPanel, gbc);
         row++;
@@ -78,14 +93,21 @@ public class PaymentDialog extends JDialog {
         p.add(lblFinalFee, gbc);
         row++;
 
-        // Apply discount action
+        // Apply discount action - from combo or text field
         btnApply.addActionListener(e -> {
-            String code = tfDiscount.getText().trim();
+            String code;
+            Object sel = promoCombo.getSelectedItem();
+            if (sel != null && !sel.toString().startsWith("--")) {
+                code = sel.toString().replaceAll(" \\(Giảm.*", "").trim();
+            } else {
+                code = tfDiscount.getText().trim();
+            }
             BigDecimal discount = financeService.calculateDiscountAmount(invoice.getTotalAmount(), code);
             BigDecimal finalFee = invoice.getTotalAmount().subtract(discount);
             lblFinalFee.setText(String.format("%,.0f VNĐ (Đã giảm %,.0f)", finalFee, discount));
-            // Save final fee to a client property for retrieval later
             lblFinalFee.putClientProperty("finalAmount", finalFee);
+            lblFinalFee.putClientProperty("discountCode", code.isEmpty() ? null : code);
+            tfAmount.setText(finalFee.toPlainString());
         });
 
         // Payment input
@@ -97,7 +119,6 @@ public class PaymentDialog extends JDialog {
 
         gbc.gridx = 0; gbc.gridy = row; p.add(new JLabel("Số tiền nộp (VNĐ):"), gbc);
         gbc.gridx = 1; 
-        JTextField tfAmount = new JTextField(invoice.getTotalAmount().toPlainString(), 15);
         p.add(tfAmount, gbc);
         row++;
 
@@ -110,7 +131,15 @@ public class PaymentDialog extends JDialog {
         btnSubmit.addActionListener(e -> {
             try {
                 BigDecimal paidAmount = new BigDecimal(tfAmount.getText().replaceAll("[,.]", "").trim());
-                String discountCode = tfDiscount.getText().trim();
+                String discountCode = (String) lblFinalFee.getClientProperty("discountCode");
+                if (discountCode == null) {
+                    Object sel = promoCombo.getSelectedItem();
+                    if (sel != null && !sel.toString().startsWith("--")) {
+                        discountCode = sel.toString().replaceAll(" \\(Giảm.*", "").trim();
+                    } else {
+                        discountCode = tfDiscount.getText().trim();
+                    }
+                }
                 PaymentMethod method = (PaymentMethod) cbMethod.getSelectedItem();
                 
                 financeService.processPayment(invoice.getId(), paidAmount, method, discountCode);

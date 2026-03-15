@@ -47,7 +47,8 @@
                                 <b>Ngày lập:</b> <span th:text="${#temporals.format(invoice.issueDate, 'dd/MM/yyyy HH:mm')}">01/01/2026</span><br>
                                 <b>Trạng thái:</b>
                                 <span th:if="${invoice.status == 'PAID'}" class="badge bg-success">ĐÃ THANH TOÁN</span>
-                                <span th:if="${invoice.status == 'PARTIAL'}" class="badge bg-warning text-dark">LỜ KHỞI TẠO</span>
+                                <span th:if="${invoice.status == 'PARTIAL'}" class="badge bg-warning text-dark">TRẢ GÓP</span>
+                                <span th:if="${invoice.status == 'PENDING_CONFIRM'}" class="badge bg-info">CHỜ XÁC NHẬN</span>
                                 <span th:if="${invoice.status == 'UNPAID'}" class="badge bg-danger">CHƯA THANH TOÁN</span>
                             </td>
                         </tr>
@@ -83,16 +84,18 @@
                 <td th:text="${invoice.enrollment.clazz.className} + ' - ' + ${invoice.enrollment.clazz.course.courseName}">Tiếng Anh A1</td>
                 <td th:text="${#numbers.formatDecimal(invoice.enrollment.clazz.course.fee, 0, 'COMMA', 0, 'POINT')} + ' đ'">3,500,000 đ</td>
             </tr>
-
-            <!-- Có thể thêm dòng mã giảm giá nếu xử lý -->
-            <tr class="item last">
-                <td>Sau giảm giá (nếu có) / Tiền cuối cùng:</td>
-                <td th:text="${#numbers.formatDecimal(invoice.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">3,500,000 đ</td>
+            <tr th:if="${invoice.appliedPromoCode != null and !invoice.appliedPromoCode.isEmpty()}" class="item">
+                <td>Mã KM: <span th:text="${invoice.appliedPromoCode}">-</span></td>
+                <td class="text-success">- <span th:text="${invoice.promoDiscountAmount != null ? #numbers.formatDecimal(invoice.promoDiscountAmount, 0, 'COMMA', 0, 'POINT') : 0}">0</span> đ</td>
+            </tr>
+            <tr class="item last" th:with="finalTotal=${invoice.promoDiscountAmount != null ? invoice.totalAmount.subtract(invoice.promoDiscountAmount) : invoice.totalAmount}">
+                <td>Tổng cần thanh toán:</td>
+                <td th:text="${#numbers.formatDecimal(finalTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'">3,500,000 đ</td>
             </tr>
 
-            <tr class="total">
+            <tr class="total" th:with="finalTotal=${invoice.promoDiscountAmount != null ? invoice.totalAmount.subtract(invoice.promoDiscountAmount) : invoice.totalAmount}">
                 <td></td>
-                <td>TỔNG CỘNG: <span th:text="${#numbers.formatDecimal(invoice.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' đ'">3,500,000 đ</span></td>
+                <td>TỔNG CỘNG: <span th:text="${#numbers.formatDecimal(finalTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'">3,500,000 đ</span></td>
             </tr>
         </table>
         

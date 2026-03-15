@@ -5,7 +5,7 @@ import com.edulanguage.entity.Enrollment;
 import com.edulanguage.entity.Result;
 import com.edulanguage.service.FinanceService;
 import com.edulanguage.service.EnrollmentService;
-import com.edulanguage.repository.ResultRepository;
+import com.edulanguage.service.ResultService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,12 +19,12 @@ public class ReportController {
 
     private final FinanceService financeService;
     private final EnrollmentService enrollmentService;
-    private final ResultRepository resultRepository;
+    private final ResultService resultService;
 
-    public ReportController(FinanceService financeService, EnrollmentService enrollmentService, ResultRepository resultRepository) {
+    public ReportController(FinanceService financeService, EnrollmentService enrollmentService, ResultService resultService) {
         this.financeService = financeService;
         this.enrollmentService = enrollmentService;
-        this.resultRepository = resultRepository;
+        this.resultService = resultService;
     }
 
     @GetMapping("/invoice/{id}")
@@ -44,12 +44,15 @@ public class ReportController {
             Enrollment enrollment = optEnrollment.get();
             
             // Yêu cầu lấy điểm chính thức của Học viên trong Lớp học cụ thể này
-            Optional<Result> optResult = resultRepository.findByStudentIdAndClazzId(
-                    enrollment.getStudent().getId(), 
+            Optional<Result> optResult = resultService.findByStudentIdAndClazzId(
+                    enrollment.getStudent().getId(),
                     enrollment.getClazz().getId()
             );
-            
-            if (optResult.isPresent() && !optResult.get().getGrade().equals("F") && "ACTIVE".equals(enrollment.getStatus())) {
+
+            String grade = optResult.map(Result::getGrade).orElse(null);
+            boolean isPassing = grade != null && !grade.equals("F") && !grade.equals("Không đạt");
+
+            if (optResult.isPresent() && isPassing && "ACTIVE".equals(enrollment.getStatus())) {
                 model.addAttribute("enrollment", enrollment);
                 model.addAttribute("result", optResult.get());
                 return "report/certificate";

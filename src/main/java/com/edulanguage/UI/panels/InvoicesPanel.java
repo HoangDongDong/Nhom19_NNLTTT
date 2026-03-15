@@ -1,7 +1,10 @@
 package com.edulanguage.UI.panels;
 
 import com.edulanguage.entity.Invoice;
+import com.edulanguage.service.EnrollmentService;
 import com.edulanguage.service.FinanceService;
+import com.edulanguage.service.PromoService;
+import com.edulanguage.service.ResultService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -12,6 +15,9 @@ import java.util.List;
 public class InvoicesPanel extends JPanel {
 
     private final FinanceService financeService;
+    private final PromoService promoService;
+    private final EnrollmentService enrollmentService;
+    private final ResultService resultService;
     private final DefaultTableModel tableModel;
     private final JTable table;
     private static final String[] COLUMNS = {
@@ -19,8 +25,12 @@ public class InvoicesPanel extends JPanel {
     };
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    public InvoicesPanel(FinanceService financeService) {
+    public InvoicesPanel(FinanceService financeService, PromoService promoService,
+                         EnrollmentService enrollmentService, ResultService resultService) {
         this.financeService = financeService;
+        this.promoService = promoService;
+        this.enrollmentService = enrollmentService;
+        this.resultService = resultService;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
@@ -44,14 +54,17 @@ public class InvoicesPanel extends JPanel {
         JButton btnRefresh = new JButton("Làm mới");
         JButton btnPayment = new JButton("Thanh toán");
         JButton btnPrint = new JButton("In Hóa Đơn");
+        JButton btnCert = new JButton("In Chứng chỉ");
 
         btnRefresh.addActionListener(e -> refreshTable());
         btnPayment.addActionListener(e -> doPayment());
-        btnPrint.addActionListener(e -> doPrint());
+        btnPrint.addActionListener(e -> doPrintInvoice());
+        btnCert.addActionListener(e -> doPrintCertificate());
 
         toolbar.add(btnRefresh);
         toolbar.add(btnPayment);
         toolbar.add(btnPrint);
+        toolbar.add(btnCert);
         add(toolbar, BorderLayout.SOUTH);
 
         refreshTable();
@@ -97,25 +110,32 @@ public class InvoicesPanel extends JPanel {
             return;
         }
 
-        PaymentDialog dialog = new PaymentDialog((JFrame) SwingUtilities.getWindowAncestor(this), invoice, financeService, this::refreshTable);
+        PaymentDialog dialog = new PaymentDialog((JFrame) SwingUtilities.getWindowAncestor(this), invoice, financeService, promoService, this::refreshTable);
         dialog.setVisible(true);
     }
 
-    private void doPrint() {
+    private void doPrintInvoice() {
         int row = table.getSelectedRow();
         if (row < 0) {
             JOptionPane.showMessageDialog(this, "Vui lòng chọn một Hóa đơn để in!", "Cảnh báo", JOptionPane.WARNING_MESSAGE);
             return;
         }
-
         Long invoiceId = (Long) tableModel.getValueAt(row, 0);
-        String url = "http://localhost:8080/report/invoice/" + invoiceId;
-
-        try {
-            Desktop.getDesktop().browse(new java.net.URI(url));
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Không thể mở URL trình duyệt: " + url + "\nChi tiết: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-            ex.printStackTrace();
+        Invoice invoice = financeService.findInvoiceByIdForPrint(invoiceId).orElse(null);
+        if (invoice == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy hóa đơn!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+        InvoicePrintDialog dialog = new InvoicePrintDialog((JFrame) SwingUtilities.getWindowAncestor(this), invoice);
+        dialog.setVisible(true);
+    }
+
+    private void doPrintCertificate() {
+        CertificateSelectDialog dialog = new CertificateSelectDialog(
+                (JFrame) SwingUtilities.getWindowAncestor(this),
+                enrollmentService,
+                resultService
+        );
+        dialog.setVisible(true);
     }
 }

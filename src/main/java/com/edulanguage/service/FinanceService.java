@@ -11,6 +11,11 @@ public interface FinanceService {
 
     List<Invoice> findAllInvoices();
     Optional<Invoice> findInvoiceById(Long id);
+
+    /**
+     * Lấy hóa đơn với đầy đủ thông tin liên quan (cho xuất/in desktop).
+     */
+    Optional<Invoice> findInvoiceByIdForPrint(Long id);
     List<Invoice> findUnpaidInvoices();
     List<Invoice> findInvoicesByStudentId(Long studentId);
     

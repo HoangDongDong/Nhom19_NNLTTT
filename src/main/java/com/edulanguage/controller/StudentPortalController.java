@@ -27,17 +27,20 @@ public class StudentPortalController {
     private final PlacementTestService placementTestService;
     private final EnrollmentService enrollmentService;
     private final FinanceService financeService;
+    private final PromoService promoService;
 
     public StudentPortalController(UserAccountService userAccountService,
                                    StudentService studentService,
                                    PlacementTestService placementTestService,
                                    EnrollmentService enrollmentService,
-                                   FinanceService financeService) {
+                                   FinanceService financeService,
+                                   PromoService promoService) {
         this.userAccountService = userAccountService;
         this.studentService = studentService;
         this.placementTestService = placementTestService;
         this.enrollmentService = enrollmentService;
         this.financeService = financeService;
+        this.promoService = promoService;
     }
 
     @GetMapping({"", "/", "/dashboard"})
@@ -95,6 +98,7 @@ public class StudentPortalController {
         model.addAttribute("currentPage", "student-invoices");
         model.addAttribute("invoice", invoice);
         model.addAttribute("paymentMethods", PaymentMethod.values());
+        model.addAttribute("promoCodes", promoService.findActivePromos());
         resolveStudent(auth, model);
         return "student/payment";
     }

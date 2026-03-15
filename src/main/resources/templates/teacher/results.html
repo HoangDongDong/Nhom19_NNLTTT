@@ -29,6 +29,13 @@
                 </div>
             </div>
 
+            <!-- Đã có điểm - có thể cập nhật -->
+            <div th:if="${selectedClassId != null && existingResults != null && !existingResults.isEmpty()}" 
+                 class="alert alert-info">
+                <i class="bi bi-info-circle"></i> <strong>Đã có điểm cho lớp này!</strong> 
+                Bạn có thể chỉnh sửa và lưu lại, hệ thống sẽ cập nhật bản ghi hiện có.
+            </div>
+
             <!-- Thông báo -->
             <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show">
                 <i class="bi bi-check-circle"></i> <span th:text="${successMsg}"></span>
@@ -42,7 +49,7 @@
             <!-- Input Form -->
             <div th:if="${selectedClassId != null}" class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <span class="fw-bold"><i class="bi bi-pencil-square text-warning"></i> Bảng Nhập Điểm Mới</span>
+                    <span class="fw-bold"><i class="bi bi-pencil-square text-warning"></i> Nhập / Cập nhật Điểm</span>
                     <small class="text-muted">Điền Điểm, Xếp loại, Nhận xét cho từng Học viên</small>
                 </div>
                 <div class="card-body p-0">
@@ -66,21 +73,24 @@
                                     <td class="fw-bold" th:text="${enrollment.student.fullName}"></td>
                                     <td>
                                         <input type="number" class="form-control" step="0.1" min="0" max="10" 
-                                               th:name="'score_' + ${enrollment.student.id}" placeholder="8.5" required>
+                                               th:name="'score_' + ${enrollment.student.id}" placeholder="8.5"
+                                               th:value="${existingResultMap != null && existingResultMap[enrollment.student.id] != null ? existingResultMap[enrollment.student.id].score : ''}"
+                                               th:required="${existingResultMap == null || existingResultMap[enrollment.student.id] == null}">
                                     </td>
                                     <td>
                                         <select class="form-select" th:name="'grade_' + ${enrollment.student.id}">
                                             <option value="">-- Chọn --</option>
-                                            <option value="Excellent">Xuất sắc</option>
-                                            <option value="Good">Giỏi</option>
-                                            <option value="Average">Khá</option>
-                                            <option value="Pass">Trung bình</option>
-                                            <option value="Fail">Không đạt</option>
+                                            <option value="Xuất sắc" th:selected="${existingResultMap != null && existingResultMap[enrollment.student.id] != null && existingResultMap[enrollment.student.id].grade == 'Xuất sắc'}">Xuất sắc</option>
+                                            <option value="Giỏi" th:selected="${existingResultMap != null && existingResultMap[enrollment.student.id] != null && existingResultMap[enrollment.student.id].grade == 'Giỏi'}">Giỏi</option>
+                                            <option value="Khá" th:selected="${existingResultMap != null && existingResultMap[enrollment.student.id] != null && existingResultMap[enrollment.student.id].grade == 'Khá'}">Khá</option>
+                                            <option value="Trung bình" th:selected="${existingResultMap != null && existingResultMap[enrollment.student.id] != null && existingResultMap[enrollment.student.id].grade == 'Trung bình'}">Trung bình</option>
+                                            <option value="Không đạt" th:selected="${existingResultMap != null && existingResultMap[enrollment.student.id] != null && existingResultMap[enrollment.student.id].grade == 'Không đạt'}">Không đạt</option>
                                         </select>
                                     </td>
                                     <td>
                                         <input type="text" class="form-control" 
-                                               th:name="'comment_' + ${enrollment.student.id}" placeholder="Ghi chú...">
+                                               th:name="'comment_' + ${enrollment.student.id}" placeholder="Ghi chú..."
+                                               th:value="${existingResultMap != null && existingResultMap[enrollment.student.id] != null ? existingResultMap[enrollment.student.id].comment : ''}">
                                     </td>
                                 </tr>
                                 <tr th:if="${#lists.isEmpty(enrollments)}">

@@ -33,6 +33,8 @@ public class MainFrame extends JFrame {
     private static final String CARD_TEACHERS = "teachers";
     private static final String CARD_COURSES = "courses";
     private static final String CARD_CLASSES = "classes";
+    private static final String CARD_ATTENDANCE = "attendance";
+    private static final String CARD_RESULTS = "results";
     private static final String CARD_BRANCHES = "branches";
     private static final String CARD_ROOMS = "rooms";
     private static final String CARD_STAFFS = "staffs";
@@ -92,6 +94,10 @@ public class MainFrame extends JFrame {
         contentPanel.add(new TeachersPanel(context, username, role), CARD_TEACHERS);
         contentPanel.add(new CoursesPanel(context, username, role, teacherId), CARD_COURSES);
         contentPanel.add(new ClassesPanel(context, role, teacherId), CARD_CLASSES);
+        if (role != null && role.contains("TEACHER")) {
+            contentPanel.add(new AttendancePanel(context, teacherId), CARD_ATTENDANCE);
+            contentPanel.add(new ResultPanel(context, teacherId), CARD_RESULTS);
+        }
         if (role != null && role.contains("ADMIN")) {
             addAdminPanels();
         }
@@ -152,6 +158,10 @@ public class MainFrame extends JFrame {
         }
         sidebar.add(createMenuButton("Khóa học", CARD_COURSES));
         sidebar.add(createMenuButton("Lớp học", CARD_CLASSES));
+        if (role != null && role.contains("TEACHER")) {
+            sidebar.add(createMenuButton("Điểm danh", CARD_ATTENDANCE));
+            sidebar.add(createMenuButton("Nhập điểm", CARD_RESULTS));
+        }
 
         if (role != null && role.contains("ADMIN")) {
             sidebar.add(Box.createVerticalStrut(10));
@@ -265,7 +275,11 @@ public class MainFrame extends JFrame {
                 placeholderStaffs = null;
             } else if (CARD_INVOICES.equals(cardName) && placeholderInvoices != null) {
                 contentPanel.remove(placeholderInvoices);
-                contentPanel.add(new InvoicesPanel(context.getBean(FinanceService.class)), CARD_INVOICES);
+                contentPanel.add(new InvoicesPanel(
+                        context.getBean(FinanceService.class),
+                        context.getBean(com.edulanguage.service.PromoService.class),
+                        context.getBean(com.edulanguage.service.EnrollmentService.class),
+                        context.getBean(com.edulanguage.service.ResultService.class)), CARD_INVOICES);
                 placeholderInvoices = null;
             }
             contentPanel.revalidate();

@@ -25,14 +25,17 @@
                             <td><span class="badge" th:classappend="${inv.status == 'PAID' ? 'bg-success' : (inv.status == 'PENDING_CONFIRM' ? 'bg-warning text-dark' : 'bg-danger')}" th:text="${inv.status}">-</span></td>
                             <td th:text="${inv.createdAt}">-</td>
                             <td class="text-nowrap">
+                                <div th:if="${inv.status == 'UNPAID' || inv.status == 'REJECTED'}" class="d-inline-block me-1">
+                                    <a th:href="@{'/staff/invoices/payment/' + ${inv.id}}" class="btn btn-sm btn-primary" title="Ghi nhận thanh toán trực tiếp"><i class="bi bi-credit-card"></i> Thanh toán</a>
+                                </div>
                                 <div th:if="${inv.status == 'PENDING_CONFIRM'}" class="d-inline-flex gap-1">
-                                    <form th:action="@{/staff/invoices/confirm}" method="post" class="m-0">
+                                    <form th:action="@{/staff/invoices/confirm}" method="post" class="m-0 d-inline">
                                         <input type="hidden" name="invoiceId" th:value="${inv.id}">
                                         <input type="hidden" name="isApproved" value="true">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                                         <button type="submit" class="btn btn-sm btn-success" title="Xác nhận đã nhận tiền"><i class="bi bi-check-circle"></i> Duyệt</button>
                                     </form>
-                                    <form th:action="@{/staff/invoices/confirm}" method="post" class="m-0">
+                                    <form th:action="@{/staff/invoices/confirm}" method="post" class="m-0 d-inline">
                                         <input type="hidden" name="invoiceId" th:value="${inv.id}">
                                         <input type="hidden" name="isApproved" value="false">
                                         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>

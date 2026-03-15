@@ -26,23 +26,20 @@ public class TeacherController {
     private final ClazzDao clazzDao;
     private final com.edulanguage.repository.EnrollmentRepository enrollmentRepository;
     private final com.edulanguage.service.AttendanceService attendanceService;
-    private final com.edulanguage.repository.ResultRepository resultRepository;
-    private final com.edulanguage.repository.AttendanceRepository attendanceRepository;
+    private final com.edulanguage.service.ResultService resultService;
 
     public TeacherController(TeacherService teacherService,
                              UserAccountService userAccountService,
                              ClazzDao clazzDao,
                              com.edulanguage.repository.EnrollmentRepository enrollmentRepository,
                              com.edulanguage.service.AttendanceService attendanceService,
-                             com.edulanguage.repository.ResultRepository resultRepository,
-                             com.edulanguage.repository.AttendanceRepository attendanceRepository) {
+                             com.edulanguage.service.ResultService resultService) {
         this.teacherService = teacherService;
         this.userAccountService = userAccountService;
         this.clazzDao = clazzDao;
         this.enrollmentRepository = enrollmentRepository;
         this.attendanceService = attendanceService;
-        this.resultRepository = resultRepository;
-        this.attendanceRepository = attendanceRepository;
+        this.resultService = resultService;
     }
 
     @GetMapping({"", "/", "/dashboard"})
@@ -82,13 +79,16 @@ public class TeacherController {
             List<com.edulanguage.entity.Enrollment> enrollments = enrollmentRepository.findByClazzId(classId);
             model.addAttribute("enrollments", enrollments);
 
-            // Load existing attendance for this class+date (history)
-            List<com.edulanguage.entity.Attendance> existingAttendance = attendanceRepository.findByClazzIdAndDate(classId, selectedDate);
+            // Load existing attendance for this class+date (for pre-fill form)
+            List<com.edulanguage.entity.Attendance> existingAttendance = attendanceService.findByClazzIdAndDate(classId, selectedDate);
             model.addAttribute("existingAttendance", existingAttendance);
+            java.util.Map<Long, com.edulanguage.entity.Attendance> existingMap = existingAttendance.stream()
+                    .collect(java.util.stream.Collectors.toMap(a -> a.getStudent().getId(), a -> a, (a, b) -> a));
 
             // Load all attendance history for this class
-            List<com.edulanguage.entity.Attendance> attendanceHistory = attendanceRepository.findByClazzIdOrderByDateDesc(classId);
+            List<com.edulanguage.entity.Attendance> attendanceHistory = attendanceService.findByClazzIdOrderByDateDesc(classId);
             model.addAttribute("attendanceHistory", attendanceHistory);
+            model.addAttribute("existingAttendanceMap", existingMap);
         }
 
         return "teacher/attendance";
@@ -99,26 +99,27 @@ public class TeacherController {
                                    @org.springframework.web.bind.annotation.RequestParam("attendanceDate") java.time.LocalDate date,
                                    @org.springframework.web.bind.annotation.RequestParam java.util.Map<String, String> requestParams,
                                    org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
-        
         try {
             java.util.Map<Long, String> statuses = new java.util.HashMap<>();
-            // Extract studentId and status from requestParams (format: status_1=PRESENT)
+            java.util.Map<Long, String> notes = new java.util.HashMap<>();
             for (java.util.Map.Entry<String, String> entry : requestParams.entrySet()) {
                 if (entry.getKey().startsWith("status_")) {
                     Long studentId = Long.parseLong(entry.getKey().replace("status_", ""));
                     statuses.put(studentId, entry.getValue());
+                } else if (entry.getKey().startsWith("note_")) {
+                    Long studentId = Long.parseLong(entry.getKey().replace("note_", ""));
+                    notes.put(studentId, entry.getValue() != null ? entry.getValue() : "");
                 }
             }
 
             com.edulanguage.entity.Clazz clazz = new com.edulanguage.entity.Clazz();
             clazz.setId(classId);
-            
-            attendanceService.submitAttendance(clazz, date, statuses);
+
+            attendanceService.submitAttendance(clazz, date, statuses, notes);
             redirectAttributes.addFlashAttribute("successMsg", "Điểm danh thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMsg", "Lỗi điểm danh: " + e.getMessage());
         }
-
         return "redirect:/teacher/attendance?classId=" + classId + "&date=" + date;
     }
 
@@ -133,9 +134,12 @@ public class TeacherController {
             List<com.edulanguage.entity.Enrollment> enrollments = enrollmentRepository.findByClazzId(classId);
             model.addAttribute("enrollments", enrollments);
 
-            // Load existing results for this class (history)
-            List<com.edulanguage.entity.Result> existingResults = resultRepository.findByClazzId(classId);
+            // Load existing results for this class (history + pre-fill form)
+            List<com.edulanguage.entity.Result> existingResults = resultService.findByClazzId(classId);
             model.addAttribute("existingResults", existingResults);
+            java.util.Map<Long, com.edulanguage.entity.Result> existingResultMap = existingResults.stream()
+                    .collect(java.util.stream.Collectors.toMap(r -> r.getStudent().getId(), r -> r, (a, b) -> a));
+            model.addAttribute("existingResultMap", existingResultMap);
         }
 
         return "teacher/results";
@@ -146,9 +150,7 @@ public class TeacherController {
                                 @org.springframework.web.bind.annotation.RequestParam java.util.Map<String, String> requestParams,
                                 org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         try {
-            com.edulanguage.entity.Clazz clazz = new com.edulanguage.entity.Clazz();
-            clazz.setId(classId);
-
+            java.util.Map<Long, com.edulanguage.service.ResultService.ResultRecord> studentData = new java.util.HashMap<>();
             for (java.util.Map.Entry<String, String> entry : requestParams.entrySet()) {
                 if (entry.getKey().startsWith("score_")) {
                     Long studentId = Long.parseLong(entry.getKey().replace("score_", ""));
@@ -157,20 +159,15 @@ public class TeacherController {
                     String comment = requestParams.getOrDefault("comment_" + studentId, "");
 
                     if (scoreStr != null && !scoreStr.isBlank()) {
-                        com.edulanguage.entity.Student student = new com.edulanguage.entity.Student();
-                        student.setId(studentId);
-
-                        com.edulanguage.entity.Result result = new com.edulanguage.entity.Result();
-                        result.setStudent(student);
-                        result.setClazz(clazz);
-                        result.setScore(new java.math.BigDecimal(scoreStr));
-                        result.setGrade(grade);
-                        result.setComment(comment);
-
-                        resultRepository.save(result);
+                        studentData.put(studentId, new com.edulanguage.service.ResultService.ResultRecord(
+                                new java.math.BigDecimal(scoreStr),
+                                grade != null && !grade.isBlank() ? grade : null,
+                                comment != null && !comment.isBlank() ? comment : null
+                        ));
                     }
                 }
             }
+            resultService.submitClassResults(classId, studentData);
             redirectAttributes.addFlashAttribute("successMsg", "Nhập điểm thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMsg", "Lỗi nhập điểm: " + e.getMessage());
