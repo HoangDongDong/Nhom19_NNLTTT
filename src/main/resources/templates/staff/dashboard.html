@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Staff Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: sidebar}"></nav>
+<header th:replace="~{fragments/layout :: header('Staff Dashboard')}"></header>
+
+<main class="main-content">
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="bi bi-person-lines-fill"></i></div>
+                    <div>
+                        <div class="text-muted small">Tổng Học viên</div>
+                        <div class="fw-bold fs-4" th:text="${totalStudents}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="icon-box bg-success bg-opacity-10 text-success"><i class="bi bi-journal-check"></i></div>
+                    <div>
+                        <div class="text-muted small">Ghi danh</div>
+                        <div class="fw-bold fs-4" th:text="${totalEnrollments}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="icon-box bg-danger bg-opacity-10 text-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div>
+                        <div class="text-muted small">HĐ chưa thanh toán</div>
+                        <div class="fw-bold fs-4" th:text="${pendingInvoices}">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liên kết nhanh -->
+    <h5 class="mb-3"><i class="bi bi-lightning-charge text-warning"></i> Thao tác nhanh</h5>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a th:href="@{/staff/students}" class="card border-0 shadow-sm text-decoration-none text-dark">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-person-plus fs-1 text-primary"></i>
+                    <div class="mt-2 fw-semibold">Quản lý Học viên</div>
+                    <small class="text-muted">Tiếp nhận, cập nhật thông tin</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/staff/enrollments}" class="card border-0 shadow-sm text-decoration-none text-dark">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-journal-plus fs-1 text-success"></i>
+                    <div class="mt-2 fw-semibold">Ghi danh mới</div>
+                    <small class="text-muted">Thêm học viên vào lớp</small>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a th:href="@{/staff/invoices}" class="card border-0 shadow-sm text-decoration-none text-dark">
+                <div class="card-body text-center py-4">
+                    <i class="bi bi-credit-card-2-front fs-1 text-danger"></i>
+                    <div class="mt-2 fw-semibold">Thu học phí</div>
+                    <small class="text-muted">Xác nhận thanh toán hóa đơn</small>
+                </div>
+            </a>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

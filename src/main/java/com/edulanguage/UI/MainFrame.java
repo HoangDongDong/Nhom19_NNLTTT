@@ -3,8 +3,11 @@ package com.edulanguage.UI;
 import com.edulanguage.UI.panels.*;
 
 import com.edulanguage.service.BranchService;
+import com.edulanguage.service.PlacementTestService;
 import com.edulanguage.service.RoomService;
 import com.edulanguage.service.StaffService;
+import com.edulanguage.service.StudentService;
+import com.edulanguage.service.FinanceService;
 
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.security.core.Authentication;
@@ -30,6 +33,7 @@ public class MainFrame extends JFrame {
     private static final String CARD_BRANCHES = "branches";
     private static final String CARD_ROOMS = "rooms";
     private static final String CARD_STAFFS = "staffs";
+    private static final String CARD_INVOICES = "invoices";
 
     private final ConfigurableApplicationContext context;
     private final String username;
@@ -39,6 +43,8 @@ public class MainFrame extends JFrame {
     private JPanel placeholderBranches;
     private JPanel placeholderRooms;
     private JPanel placeholderStaffs;
+    private JPanel placeholderInvoices;
+    private JPanel placeholderStudents;
 
     public MainFrame(ConfigurableApplicationContext context) {
         this.context = context;
@@ -62,7 +68,8 @@ public class MainFrame extends JFrame {
 
         JPanel sidebar = buildSidebar();
         contentPanel.add(new HomePanel(username, role), CARD_HOME);
-        contentPanel.add(new StudentsPanel(), CARD_STUDENTS);
+        placeholderStudents = createPlaceholderPanel("Học viên", CARD_STUDENTS);
+        contentPanel.add(placeholderStudents, CARD_STUDENTS);
         contentPanel.add(new TeachersPanel(), CARD_TEACHERS);
         contentPanel.add(new CoursesPanel(), CARD_COURSES);
         contentPanel.add(new ClassesPanel(), CARD_CLASSES);
@@ -82,9 +89,11 @@ public class MainFrame extends JFrame {
         placeholderBranches = createPlaceholderPanel("Chi nhánh", CARD_BRANCHES);
         placeholderRooms = createPlaceholderPanel("Phòng học", CARD_ROOMS);
         placeholderStaffs = createPlaceholderPanel("Nhân viên", CARD_STAFFS);
+        placeholderInvoices = createPlaceholderPanel("Tài chính", CARD_INVOICES);
         contentPanel.add(placeholderBranches, CARD_BRANCHES);
         contentPanel.add(placeholderRooms, CARD_ROOMS);
         contentPanel.add(placeholderStaffs, CARD_STAFFS);
+        contentPanel.add(placeholderInvoices, CARD_INVOICES);
     }
 
     private JPanel createPlaceholderPanel(String title, String cardName) {
@@ -115,7 +124,7 @@ public class MainFrame extends JFrame {
         sidebar.add(logo);
 
         sidebar.add(createMenuButton("Trang chủ", CARD_HOME));
-        sidebar.add(createMenuButton("Học viên", CARD_STUDENTS));
+        sidebar.add(createLazyMenuButton("Học viên", CARD_STUDENTS));
         sidebar.add(createMenuButton("Giáo viên", CARD_TEACHERS));
         sidebar.add(createMenuButton("Khóa học", CARD_COURSES));
         sidebar.add(createMenuButton("Lớp học", CARD_CLASSES));
@@ -130,6 +139,7 @@ public class MainFrame extends JFrame {
             sidebar.add(createAdminMenuButton("Chi nhánh", CARD_BRANCHES));
             sidebar.add(createAdminMenuButton("Phòng học", CARD_ROOMS));
             sidebar.add(createAdminMenuButton("Nhân viên", CARD_STAFFS));
+            sidebar.add(createAdminMenuButton("Tài chính / Hóa đơn", CARD_INVOICES));
         }
 
         sidebar.add(Box.createVerticalGlue());
@@ -159,6 +169,23 @@ public class MainFrame extends JFrame {
         return btn;
     }
 
+    /** Nút menu lazy-load: khi click sẽ tải panel thật (nếu còn placeholder) rồi hiển thị. */
+    private JButton createLazyMenuButton(String text, String cardName) {
+        JButton btn = new JButton(text);
+        btn.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        btn.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+        btn.setBackground(null);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.addActionListener(e -> {
+            ensurePanelLoaded(cardName);
+            cardLayout.show(contentPanel, cardName);
+        });
+        return btn;
+    }
+
     /** Nút menu ADMIN: khi click sẽ tải panel CRUD (nếu còn placeholder) rồi hiển thị. */
     private JButton createAdminMenuButton(String text, String cardName) {
         JButton btn = new JButton(text);
@@ -176,7 +203,26 @@ public class MainFrame extends JFrame {
         return btn;
     }
 
-    /** Tải panel CRUD thật thay placeholder khi user click menu (lazy load). */
+    /** Tải panel thật thay placeholder khi user click menu (lazy load). */
+    private void ensurePanelLoaded(String cardName) {
+        try {
+            if (CARD_STUDENTS.equals(cardName) && placeholderStudents != null) {
+                contentPanel.remove(placeholderStudents);
+                contentPanel.add(new StudentsPanel(
+                        context.getBean(StudentService.class),
+                        context.getBean(PlacementTestService.class),
+                        context.getBean(com.edulanguage.service.EnrollmentService.class),
+                        context.getBean(com.edulanguage.dao.ClazzDao.class)), CARD_STUDENTS);
+                placeholderStudents = null;
+            }
+            contentPanel.revalidate();
+            contentPanel.repaint();
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Lỗi tải dữ liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    /** Tải panel CRUD thật thay placeholder khi user click menu ADMIN (lazy load). */
     private void ensureAdminPanelLoaded(String cardName) {
         try {
             if (CARD_BRANCHES.equals(cardName) && placeholderBranches != null) {
@@ -191,6 +237,10 @@ public class MainFrame extends JFrame {
                 contentPanel.remove(placeholderStaffs);
                 contentPanel.add(new StaffsPanel(context.getBean(StaffService.class)), CARD_STAFFS);
                 placeholderStaffs = null;
+            } else if (CARD_INVOICES.equals(cardName) && placeholderInvoices != null) {
+                contentPanel.remove(placeholderInvoices);
+                contentPanel.add(new InvoicesPanel(context.getBean(FinanceService.class)), CARD_INVOICES);
+                placeholderInvoices = null;
             }
             contentPanel.revalidate();
             contentPanel.repaint();

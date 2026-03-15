@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head(${teacher.id != null ? 'Sửa Giáo Viên' : 'Thêm Giáo Viên'})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: sidebar}"></nav>
+<header th:replace="~{fragments/layout :: header(${teacher.id != null ? 'Chỉnh sửa Giáo viên' : 'Đăng ký Giáo viên mới'})}"></header>
+
+<main class="main-content">
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-10 col-lg-8">
+            <div th:if="${teacher.id == null}" class="alert alert-info d-flex align-items-center mb-4">
+                <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+                <div>
+                    <strong>Lưu ý:</strong> Nên điền luôn thông tin Tài khoản đăng nhập bên dưới để hệ thống cấp quyền truy cập ngay cho giáo viên.
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form th:action="@{/staff/teachers/save}" th:object="${teacher}" method="post">
+                        <input type="hidden" th:field="*{id}" />
+
+                        <div class="mb-4">
+                            <h6 class="text-uppercase text-muted mb-3">Thông tin cá nhân</h6>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label fw-bold">Họ và Tên <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{fullName}" required placeholder="Ví dụ: Nguyễn Văn A">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control" th:field="*{phone}" required placeholder="09xxxxxxx">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Địa chỉ Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" th:field="*{email}" required placeholder="nguyenvana@example.com">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 pt-3 border-top">
+                            <h6 class="text-uppercase text-muted mb-3">Phân công nghề nghiệp</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Chuyên môn giảng dạy <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" th:field="*{specialty}" required placeholder="Ví dụ: Luyện thi IELTS, Giao Tiếp">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Ngày nhận việc <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" class="form-control" th:field="*{hireDate}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Trạng Thái Kích Hoạt</label>
+                                    <select class="form-select" th:field="*{status}">
+                                        <option th:each="s : ${statusValues}" th:value="${s}" th:text="${s}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 pt-3 border-top">
+                            <h6 class="text-uppercase text-muted mb-3">Tài khoản hệ thống</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Tên đăng nhập <span class="text-muted">(Tùy chọn)</span></label>
+                                    <input type="text" class="form-control" name="username" th:value="${currentUsername}" placeholder="Ví dụ: tea_nguyenvana">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Mật khẩu <span th:if="${currentUsername != null}" class="fw-normal text-muted">(Để trống nếu không muốn đổi)</span></label>
+                                    <input type="password" class="form-control" name="password" placeholder="Mật khẩu mới (ít nhất 6 ký tự)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                            <a th:href="@{/staff/teachers}" class="btn btn-light"><i class="bi bi-x"></i> Hủy</a>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-person-check"></i> 
+                                <span th:text="${teacher.id != null ? 'Lưu Thay Đổi' : 'Xác Nhận Đăng Ký'}"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

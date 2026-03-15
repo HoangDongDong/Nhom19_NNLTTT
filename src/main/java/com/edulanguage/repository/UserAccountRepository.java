@@ -11,4 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface UserAccountRepository extends JpaRepository<UserAccount, Long> {
 
     Optional<UserAccount> findByUsername(String username);
+
+    Optional<UserAccount> findByRoleAndRelatedId(com.edulanguage.entity.enums.Role role, Long relatedId);
 }

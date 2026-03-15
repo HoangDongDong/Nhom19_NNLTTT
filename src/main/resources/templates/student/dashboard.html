@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Student Dashboard')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: sidebar}"></nav>
+<header th:replace="~{fragments/layout :: header('Xin chào, Học viên')}"></header>
+
+<main class="main-content">
+    <div th:if="${errorMsg}" class="alert alert-warning" th:text="${errorMsg}"></div>
+
+    <div th:if="${hasStudentProfile}">
+        <!-- Thông tin cá nhân -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <div class="text-muted small">Xin chào</div>
+                        <div class="fw-bold fs-5" th:text="${student.fullName}">-</div>
+                        <small class="text-muted" th:text="'Email: ' + ${student.email ?: 'Chưa cập nhật'}">-</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4" th:if="${lastResult != null}">
+                <div class="card stat-card">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="icon-box bg-info bg-opacity-10 text-info"><i class="bi bi-trophy"></i></div>
+                        <div>
+                            <div class="text-muted small">Kết quả Placement Test</div>
+                            <div class="fw-bold fs-4" th:text="${lastResult.grade}">-</div>
+                            <small class="text-muted" th:text="'Trình độ: ' + ${lastLevel}">-</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card stat-card">
+                    <div class="card-body d-flex align-items-center gap-3">
+                        <div class="icon-box bg-success bg-opacity-10 text-success"><i class="bi bi-journal-check"></i></div>
+                        <div>
+                            <div class="text-muted small">Khóa đang học</div>
+                            <div class="fw-bold fs-4" th:text="${enrollments != null ? #lists.size(enrollments) : 0}">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khóa học của tôi -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-book text-primary"></i> Khóa học của tôi</h6></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>Lớp</th><th>Khóa học</th><th>Trạng thái</th><th>Chứng chỉ</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="e : ${enrollments}">
+                                <td th:text="${e.clazz?.className}">-</td>
+                                <td th:text="${e.clazz?.course?.courseName}">-</td>
+                                <td><span class="badge" th:classappend="${e.status == 'ACTIVE' ? 'bg-success' : 'bg-warning text-dark'}" th:text="${e.status}">-</span></td>
+                                <td>
+                                    <a th:if="${e.status == 'ACTIVE'}" th:href="@{'/report/certificate/' + ${e.id}}" target="_blank" class="btn btn-sm btn-outline-success"><i class="bi bi-award"></i> Xem</a>
+                                    <span th:unless="${e.status == 'ACTIVE'}" class="text-muted">-</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${enrollments == null or #lists.isEmpty(enrollments)}">
+                                <td colspan="4" class="text-center text-muted py-3">Chưa có khóa học nào.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hóa đơn -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white"><h6 class="mb-0"><i class="bi bi-credit-card text-danger"></i> Hóa đơn & Thanh toán</h6></div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr><th>#</th><th>Số tiền</th><th>Trạng thái</th><th>Ngày tạo</th><th>In</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="inv : ${invoices}">
+                                <td th:text="${inv.id}">-</td>
+                                <td th:text="${inv.totalAmount != null ? #numbers.formatDecimal(inv.totalAmount, 1, 'COMMA', 0, 'POINT') + ' đ' : '-'}">-</td>
+                                <td><span class="badge" th:classappend="${inv.status == 'PAID' ? 'bg-success' : 'bg-danger'}" th:text="${inv.status}">-</span></td>
+                                <td th:text="${inv.createdAt}">-</td>
+                                <td><a th:href="@{'/report/invoice/' + ${inv.id}}" target="_blank" class="btn btn-sm btn-outline-secondary"><i class="bi bi-printer"></i></a></td>
+                            </tr>
+                            <tr th:if="${invoices == null or #lists.isEmpty(invoices)}">
+                                <td colspan="5" class="text-center text-muted py-3">Chưa có hóa đơn nào.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

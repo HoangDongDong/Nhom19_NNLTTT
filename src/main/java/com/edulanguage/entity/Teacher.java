@@ -53,8 +53,7 @@ public class Teacher extends BaseEntity {
     @OneToMany(mappedBy = "teacher", fetch = FetchType.LAZY)
     private List<Clazz> classes;
 
-    @OneToOne(mappedBy = "teacher", fetch = FetchType.LAZY)
-    private UserAccount userAccount;
+
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
@@ -70,6 +69,5 @@ public class Teacher extends BaseEntity {
     public void setStatus(Status status) { this.status = status; }
     public List<Clazz> getClasses() { return classes; }
     public void setClasses(List<Clazz> classes) { this.classes = classes; }
-    public UserAccount getUserAccount() { return userAccount; }
-    public void setUserAccount(UserAccount userAccount) { this.userAccount = userAccount; }
+
 }

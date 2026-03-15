@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Mã khuyến mại')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: sidebar}"></nav>
+<header th:replace="~{fragments/layout :: header('Quản lý Mã khuyến mại')}"></header>
+
+<main class="main-content">
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${message}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0"><i class="bi bi-tags me-2"></i>Danh sách Mã khuyến mại</h5>
+        <a th:href="@{/admin/promos/new}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> Thêm mã mới
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã</th>
+                            <th>Mô tả</th>
+                            <th class="text-center">% Giảm</th>
+                            <th class="text-end">Giảm tối đa</th>
+                            <th class="text-center">Thời hạn</th>
+                            <th class="text-center">Lượt dùng</th>
+                            <th class="text-center">Trạng thái</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${promos}">
+                            <td>
+                                <span class="badge bg-dark font-monospace fs-6" th:text="${p.code}">CODE</span>
+                            </td>
+                            <td th:text="${p.description}" class="text-muted">-</td>
+                            <td class="text-center fw-bold text-primary" th:text="${p.discountPercentage + '%'}">10%</td>
+                            <td class="text-end">
+                                <span th:if="${p.maxDiscountAmount != null}" th:text="${#numbers.formatDecimal(p.maxDiscountAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">-</span>
+                                <span th:if="${p.maxDiscountAmount == null}" class="text-muted">Không giới hạn</span>
+                            </td>
+                            <td class="text-center small">
+                                <span th:if="${p.validFrom != null}" th:text="${p.validFrom}">-</span>
+                                <span th:if="${p.validFrom != null && p.validUntil != null}"> → </span>
+                                <span th:if="${p.validUntil != null}" th:text="${p.validUntil}">-</span>
+                                <span th:if="${p.validFrom == null && p.validUntil == null}" class="text-muted">Không giới hạn</span>
+                            </td>
+                            <td class="text-center">
+                                <span th:text="${p.usageCount}">0</span>
+                                <span th:if="${p.maxUsages != null}"> / <span th:text="${p.maxUsages}">100</span></span>
+                                <span th:if="${p.maxUsages == null}" class="text-muted"> / ∞</span>
+                            </td>
+                            <td class="text-center">
+                                <span th:if="${p.isActive}" class="badge bg-success">Đang hoạt động</span>
+                                <span th:unless="${p.isActive}" class="badge bg-secondary">Vô hiệu</span>
+                            </td>
+                            <td class="text-end">
+                                <a th:href="@{/admin/promos/edit/{id}(id=${p.id})}" class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="bi bi-pencil"></i> Sửa
+                                </a>
+                                <form th:action="@{/admin/promos/delete/{id}(id=${p.id})}" method="post" class="d-inline">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Xóa mã khuyến mại này?');">
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(promos)}">
+                            <td colspan="8" class="text-center text-muted py-4">
+                                <i class="bi bi-tag fs-1 d-block mb-2"></i>
+                                Chưa có mã khuyến mại nào. Hãy tạo mã đầu tiên!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

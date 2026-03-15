@@ -5,15 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nhân viên - EduLanguage</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar { background: #6c757d !important; }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-secondary">
-        <div class="container"><a class="navbar-brand" href="/home">EduLanguage</a><a href="/home" class="btn btn-outline-light btn-sm">Trang chủ</a></div>
+    <nav class="navbar navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/home">EduLanguage</a>
+            <a href="/home" class="btn btn-outline-light btn-sm">Trang chủ</a>
+        </div>
     </nav>
     <main class="container my-4">
         <h4>Khu vực Nhân viên</h4>
-        <p class="text-muted">Tư vấn, ghi danh, kế toán (nội dung mở rộng sau).</p>
-        <a href="/home" class="btn btn-outline-secondary">← Về trang chủ</a>
+        <p class="text-muted">Tư vấn, ghi danh, quản lý học viên.</p>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Quản lý Học viên</h5>
+                        <p class="card-text text-muted">Thêm, sửa, xóa học viên và thực hiện Test đầu vào.</p>
+                        <a href="/students" class="btn btn-primary">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Khóa học</h5>
+                        <p class="card-text text-muted">Xem danh sách khóa học hiện có.</p>
+                        <a href="/courses" class="btn btn-outline-secondary">Truy cập</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100 border-primary">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-primary"><i class="bi bi-person-lines-fill"></i> Ghi danh</h5>
+                        <p class="card-text text-muted">Khởi tạo Ghi danh cho học viên vào lớp.</p>
+                        <a href="/staff/enrollments" class="btn btn-primary">Quản lý Ghi danh</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm h-100 border-success">
+                    <div class="card-body text-center">
+                        <h5 class="card-title text-success"><i class="bi bi-wallet2"></i> Tài chính</h5>
+                        <p class="card-text text-muted">Thu học phí, áp mã giảm giá, in hóa đơn.</p>
+                        <a href="/staff/invoices" class="btn btn-success">Quản lý Hóa đơn</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <a href="/home" class="btn btn-outline-secondary mt-4">← Về trang chủ</a>
     </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

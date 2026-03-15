@@ -55,6 +55,12 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
+        <!-- Thymeleaf Extras: Spring Security (sec:authorize) -->
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+        </dependency>
+
         <!-- Driver SQL Server -->
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>

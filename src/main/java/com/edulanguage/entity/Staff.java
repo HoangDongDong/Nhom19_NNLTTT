@@ -40,8 +40,7 @@ public class Staff extends BaseEntity {
     @Column(name = "email", length = 100, unique = true)
     private String email;
 
-    @OneToOne(mappedBy = "staff", fetch = FetchType.LAZY)
-    private UserAccount userAccount;
+
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
@@ -51,6 +50,5 @@ public class Staff extends BaseEntity {
     public void setPhone(String phone) { this.phone = phone; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-    public UserAccount getUserAccount() { return userAccount; }
-    public void setUserAccount(UserAccount userAccount) { this.userAccount = userAccount; }
+
 }

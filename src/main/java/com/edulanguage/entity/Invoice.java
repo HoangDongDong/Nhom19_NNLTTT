@@ -40,6 +40,15 @@ public class Invoice extends BaseEntity {
     @Column(name = "status", length = 50)
     private String status;
 
+    /** Mã khuyến mại đã áp dụng (nếu có) */
+    @Size(max = 50)
+    @Column(name = "applied_promo_code", length = 50)
+    private String appliedPromoCode;
+
+    /** Số tiền được khuyến mại */
+    @Column(name = "promo_discount_amount", precision = 14, scale = 2)
+    private BigDecimal promoDiscountAmount;
+
     public Student getStudent() { return student; }
     public void setStudent(Student student) { this.student = student; }
     public Enrollment getEnrollment() { return enrollment; }
@@ -50,4 +59,8 @@ public class Invoice extends BaseEntity {
     public void setIssueDate(LocalDateTime issueDate) { this.issueDate = issueDate; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public String getAppliedPromoCode() { return appliedPromoCode; }
+    public void setAppliedPromoCode(String appliedPromoCode) { this.appliedPromoCode = appliedPromoCode; }
+    public BigDecimal getPromoDiscountAmount() { return promoDiscountAmount; }
+    public void setPromoDiscountAmount(BigDecimal promoDiscountAmount) { this.promoDiscountAmount = promoDiscountAmount; }
 }

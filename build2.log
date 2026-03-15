@@ -1,0 +1,56 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< Project_GK_Nhom_19:Project_GK_Nhom_19 >----------------
+[INFO] Building Project_GK_Nhom_19 1.1.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ war ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.3.2:clean (default-clean) @ Project_GK_Nhom_19 ---
+[INFO] Deleting Q:\DangQuan\Ngon Ngu Lap Trinh Tien Tien\Nhom19_NNLTTT\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ Project_GK_Nhom_19 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 49 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ Project_GK_Nhom_19 ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 125 source files with javac [debug release 17] to target\classes
+[INFO] Annotation processing is enabled because one or more processors were found
+  on the class path. A future release of javac may disable annotation processing
+  unless at least one processor is specified by name (-processor), or a search
+  path is specified (--processor-path, --processor-module-path), or annotation
+  processing is enabled explicitly (-proc:only, -proc:full).
+  Use -Xlint:-options to suppress this message.
+  Use -proc:none to disable annotation processing.
+[INFO] /Q:/DangQuan/Ngon Ngu Lap Trinh Tien Tien/Nhom19_NNLTTT/src/main/java/com/edulanguage/config/SecurityConfig.java: Q:\DangQuan\Ngon Ngu Lap Trinh Tien Tien\Nhom19_NNLTTT\src\main\java\com\edulanguage\config\SecurityConfig.java uses or overrides a deprecated API.
+[INFO] /Q:/DangQuan/Ngon Ngu Lap Trinh Tien Tien/Nhom19_NNLTTT/src/main/java/com/edulanguage/config/SecurityConfig.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ Project_GK_Nhom_19 ---
+[INFO] skip non existing resourceDirectory Q:\DangQuan\Ngon Ngu Lap Trinh Tien Tien\Nhom19_NNLTTT\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ Project_GK_Nhom_19 ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- surefire:3.1.2:test (default-test) @ Project_GK_Nhom_19 ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- war:3.4.0:war (default-war) @ Project_GK_Nhom_19 ---
+[INFO] Packaging webapp
+[INFO] Assembling webapp [Project_GK_Nhom_19] in [Q:\DangQuan\Ngon Ngu Lap Trinh Tien Tien\Nhom19_NNLTTT\target\Project_GK_Nhom_19-1.1.0]
+[INFO] Processing war project
+[INFO] Building war: Q:\DangQuan\Ngon Ngu Lap Trinh Tien Tien\Nhom19_NNLTTT\target\Project_GK_Nhom_19-1.1.0.war
+[INFO] 
+[INFO] --- spring-boot:3.2.5:repackage (repackage) @ Project_GK_Nhom_19 ---
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  10.926 s
+[INFO] Finished at: 2026-03-15T14:30:48+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.5:repackage (repackage) on project Project_GK_Nhom_19: Execution repackage of goal org.springframework.boot:spring-boot-maven-plugin:3.2.5:repackage failed: Unable to rename 'Q:\DangQuan\Ngon Ngu Lap Trinh Tien Tien\Nhom19_NNLTTT\target\Project_GK_Nhom_19-1.1.0.war' to 'Q:\DangQuan\Ngon Ngu Lap Trinh Tien Tien\Nhom19_NNLTTT\target\Project_GK_Nhom_19-1.1.0.war.original' -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/PluginExecutionException

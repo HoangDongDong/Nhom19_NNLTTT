@@ -39,6 +39,17 @@
                     <option th:each="r : ${roleList}" th:value="${r}" th:text="${r}">STAFF</option>
                 </select>
             </div>
+            
+            <hr>
+            <h6 class="text-muted mb-3">Tài khoản đăng nhập</h6>
+            <div class="mb-3">
+                <label class="form-label">Tên đăng nhập <span class="text-muted">(Tùy chọn)</span></label>
+                <input type="text" class="form-control" name="username" th:value="${currentUsername}" placeholder="Ví dụ: staff_nguyenvana">
+            </div>
+            <div class="mb-4">
+                <label class="form-label">Mật khẩu <span th:if="${currentUsername != null}" class="text-muted">(Để trống nếu không đổi)</span></label>
+                <input type="password" class="form-control" name="password" placeholder="Mật khẩu mới">
+            </div>
             <button type="submit" class="btn btn-primary">Lưu</button>
             <a th:href="@{/admin/staffs}" class="btn btn-outline-secondary">Hủy</a>
         </form>

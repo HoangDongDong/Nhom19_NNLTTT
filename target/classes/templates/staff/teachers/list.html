@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{fragments/layout :: head('Quản lý Giáo viên')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: sidebar}"></nav>
+<header th:replace="~{fragments/layout :: header('Quản lý Giáo viên')}"></header>
+
+<main class="main-content">
+    <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show">
+        <span th:text="${successMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show">
+        <span th:text="${errorMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Danh sách Giáo viên</h5>
+        <a th:href="@{/staff/teachers/new}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Thêm Giáo Viên
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Họ và Tên</th>
+                            <th>Email</th>
+                            <th>Số điện thoại</th>
+                            <th>Chuyên môn</th>
+                            <th>Ngày nhận việc</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="teacher : ${teachers}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px">
+                                        <i class="bi bi-person"></i>
+                                    </div>
+                                    <strong th:text="${teacher.fullName}"></strong>
+                                </div>
+                            </td>
+                            <td th:text="${teacher.email}"></td>
+                            <td th:text="${teacher.phone}"></td>
+                            <td><span class="badge bg-info text-dark" th:text="${teacher.specialty}"></span></td>
+                            <td th:text="${#temporals.format(teacher.hireDate, 'dd/MM/yyyy')}"></td>
+                            <td>
+                                <span class="badge" th:classappend="${teacher.status.name() == 'ACTIVE' ? 'bg-success' : 'bg-danger'}" th:text="${teacher.status.name()}"></span>
+                            </td>
+                            <td class="text-end">
+                                <a th:href="@{'/staff/teachers/edit/' + ${teacher.id}}" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{'/staff/teachers/delete/' + ${teacher.id}}" class="btn btn-sm btn-outline-danger" title="Xóa" onclick="return confirm('Bạn có chắc chắn muốn xóa giáo viên này? Sẽ xóa cả tài khoản đăng nhập đi kèm trên hệ thống!');">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(teachers)}">
+                            <td colspan="7" class="text-center text-muted py-4">Chưa có dữ liệu giáo viên.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle} + ' | EduLanguage'">EduLanguage</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 60px;
+            --primary: #1e3a5f;
+            --primary-light: #2d5a87;
+            --primary-dark: #0f2540;
+            --accent: #4fc3f7;
+            --surface: #f8f9fa;
+            --sidebar-bg: #1a1d21;
+            --sidebar-hover: #2c3036;
+            --sidebar-active: #0d6efd;
+        }
+        * { font-family: 'Inter', sans-serif; }
+        body { background: var(--surface); margin: 0; }
+
+        /* === HEADER === */
+        .top-header {
+            position: fixed; top: 0; left: var(--sidebar-width); right: 0;
+            height: var(--header-height);
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 24px;
+            z-index: 1030;
+        }
+        .top-header .page-title { font-weight: 600; font-size: 1.1rem; color: var(--primary-dark); }
+        .top-header .user-info { display: flex; align-items: center; gap: 12px; }
+        .top-header .user-info .role-badge {
+            background: var(--primary); color: #fff; padding: 3px 10px;
+            border-radius: 20px; font-size: 0.75rem; font-weight: 500;
+        }
+
+        /* === SIDEBAR === */
+        .sidebar {
+            position: fixed; top: 0; left: 0; bottom: 0;
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            color: #c9d1d9;
+            overflow-y: auto;
+            z-index: 1040;
+            display: flex; flex-direction: column;
+        }
+        .sidebar .brand {
+            height: var(--header-height);
+            display: flex; align-items: center; padding: 0 20px;
+            font-weight: 700; font-size: 1.15rem; color: #fff;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            gap: 10px;
+        }
+        .sidebar .brand i { font-size: 1.4rem; color: var(--accent); }
+        .sidebar .menu-section {
+            padding: 16px 12px 4px 20px;
+            font-size: 0.7rem; text-transform: uppercase;
+            letter-spacing: 1.2px; color: #6c757d; font-weight: 600;
+        }
+        .sidebar .nav-link {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 20px; color: #c9d1d9;
+            font-size: 0.88rem; border-radius: 8px;
+            margin: 2px 10px; transition: all 0.15s;
+            text-decoration: none;
+        }
+        .sidebar .nav-link:hover { background: var(--sidebar-hover); color: #fff; }
+        .sidebar .nav-link.active { background: var(--sidebar-active); color: #fff; font-weight: 500; }
+        .sidebar .nav-link i { font-size: 1.1rem; width: 22px; text-align: center; }
+        .sidebar .sidebar-footer {
+            margin-top: auto; padding: 16px; border-top: 1px solid rgba(255,255,255,.08);
+        }
+
+        /* === CONTENT === */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            padding: 24px;
+            min-height: calc(100vh - var(--header-height));
+        }
+
+        /* Cards */
+        .stat-card {
+            border: none; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card .icon-box {
+            width: 48px; height: 48px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .top-header { left: 0; }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== SIDEBAR FRAGMENT ==================== -->
+<nav th:fragment="sidebar" class="sidebar" th:with="currentPage=${currentPage ?: ''}">
+    <div class="brand">
+        <i class="bi bi-mortarboard-fill"></i>
+        <span>EduLanguage</span>
+    </div>
+
+    <!-- === ADMIN Menu === -->
+    <div sec:authorize="hasRole('ADMIN')">
+        <div class="menu-section">Quản trị</div>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'admin-dashboard')} ? 'active'" th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'admin-staffs')} ? 'active'" th:href="@{/admin/staffs}"><i class="bi bi-people"></i> Nhân viên</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'admin-rooms')} ? 'active'" th:href="@{/admin/rooms}"><i class="bi bi-door-open"></i> Phòng học</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'admin-branches')} ? 'active'" th:href="@{/admin/branches}"><i class="bi bi-building"></i> Chi nhánh</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'admin-reports')} ? 'active'" th:href="@{/admin/reports}"><i class="bi bi-bar-chart-line"></i> Báo cáo TC</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'admin-promos')} ? 'active'" th:href="@{/admin/promos}"><i class="bi bi-tags"></i> Mã khuyến mại</a>
+    </div>
+
+    <!-- === STAFF Menu === -->
+    <div sec:authorize="hasAnyRole('STAFF','ADMIN')">
+        <div class="menu-section">Vận hành & Học vụ</div>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'staff-dashboard')} ? 'active'" th:href="@{/staff/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" th:classappend="${currentPage == 'staff-courses' ? 'active' : ''}" th:href="@{/staff/courses}"><i class="bi bi-book"></i> Khóa học</a>
+        <a class="nav-link" th:classappend="${currentPage == 'staff-teachers' ? 'active' : ''}" th:href="@{/staff/teachers}"><i class="bi bi-person-badge"></i> Giáo viên</a>
+        <a class="nav-link" th:classappend="${currentPage == 'staff-classes' ? 'active' : ''}" th:href="@{/staff/classes}"><i class="bi bi-calendar2-week"></i> Mở lớp & Xếp lịch</a>
+        <a class="nav-link" th:classappend="${currentPage == 'staff-students' ? 'active' : ''}" th:href="@{/students}"><i class="bi bi-person-lines-fill"></i> Học viên</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'staff-enrollments')} ? 'active'" th:href="@{/staff/enrollments}"><i class="bi bi-journal-check"></i> Ghi danh</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'staff-invoices')} ? 'active'" th:href="@{/staff/invoices}"><i class="bi bi-receipt"></i> Hóa đơn</a>
+    </div>
+
+    <!-- === TEACHER Menu === -->
+    <div sec:authorize="hasRole('TEACHER')">
+        <div class="menu-section">Giảng dạy</div>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'teacher-dashboard')} ? 'active'" th:href="@{/teacher/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'teacher-schedule')} ? 'active'" th:href="@{/teacher/schedule}"><i class="bi bi-calendar3"></i> Lịch dạy</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'teacher-classes')} ? 'active'" th:href="@{/teacher/classes}"><i class="bi bi-people"></i> Lớp phụ trách</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'teacher-attendance')} ? 'active'" th:href="@{/teacher/attendance}"><i class="bi bi-check2-square"></i> Điểm danh</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'teacher-results')} ? 'active'" th:href="@{/teacher/results}"><i class="bi bi-card-checklist"></i> Nhập điểm</a>
+    </div>
+
+    <!-- === STUDENT Menu === -->
+    <div sec:authorize="hasRole('STUDENT')">
+        <div class="menu-section">Cá nhân</div>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'student-dashboard')} ? 'active'" th:href="@{/student/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'student-schedule')} ? 'active'" th:href="@{/student/schedule}"><i class="bi bi-calendar3"></i> Lịch học</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'student-results')} ? 'active'" th:href="@{/student/results}"><i class="bi bi-trophy"></i> Kết quả</a>
+        <a class="nav-link" th:classappend="${#strings.contains(currentPage,'student-invoices')} ? 'active'" th:href="@{/student/invoices}"><i class="bi bi-credit-card"></i> Học phí</a>
+    </div>
+
+    <!-- Sidebar Footer — Profile & Logout -->
+    <div class="sidebar-footer">
+        <a class="nav-link" th:href="@{/profile}"><i class="bi bi-person-circle"></i> Hồ sơ cá nhân</a>
+        <form th:action="@{/logout}" method="post" style="margin:0">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+            <button type="submit" class="nav-link w-100 text-start border-0 bg-transparent" style="color:#ef5350;">
+                <i class="bi bi-box-arrow-left"></i> Đăng xuất
+            </button>
+        </form>
+    </div>
+</nav>
+
+<!-- ==================== HEADER FRAGMENT ==================== -->
+<header th:fragment="header(pageTitle)" class="top-header">
+    <span class="page-title" th:text="${pageTitle}">Trang</span>
+    <div class="user-info">
+        <span class="role-badge" sec:authorize="hasRole('ADMIN')">ADMIN</span>
+        <span class="role-badge" sec:authorize="hasRole('STAFF')" style="background:#2e7d32">STAFF</span>
+        <span class="role-badge" sec:authorize="hasRole('TEACHER')" style="background:#e65100">TEACHER</span>
+        <span class="role-badge" sec:authorize="hasRole('STUDENT')" style="background:#6a1b9a">STUDENT</span>
+        <span th:text="${#authentication.name}">user</span>
+    </div>
+</header>
+
+</body>
+</html>

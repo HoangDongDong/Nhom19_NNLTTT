@@ -3,35 +3,28 @@ package com.edulanguage.controller;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.util.stream.Collectors;
-
 /**
- * Trang chủ sau khi đăng nhập, hiển thị theo vai trò (role).
+ * Trang chủ: sau khi đăng nhập, tự động chuyển hướng đến Dashboard phù hợp với vai trò.
  */
 @Controller
 public class HomeController {
 
     @GetMapping({"/", "/home"})
-    public String home(Authentication auth, Model model) {
+    public String home(Authentication auth) {
         if (auth == null || !auth.isAuthenticated()) {
             return "redirect:/login";
         }
-        String username = auth.getName();
         String role = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .filter(a -> a.startsWith("ROLE_"))
-                .map(a -> a.replace("ROLE_", ""))
-                .collect(Collectors.joining(", "));
+                .findFirst().orElse("");
 
-        model.addAttribute("username", username);
-        model.addAttribute("role", role);
-        model.addAttribute("isAdmin", role.contains("ADMIN"));
-        model.addAttribute("isTeacher", role.contains("TEACHER"));
-        model.addAttribute("isStudent", role.contains("STUDENT"));
-        model.addAttribute("isStaff", role.contains("STAFF"));
-        return "home";
+        if (role.contains("ADMIN"))   return "redirect:/admin/dashboard";
+        if (role.contains("STAFF"))   return "redirect:/staff/dashboard";
+        if (role.contains("TEACHER")) return "redirect:/teacher/dashboard";
+        if (role.contains("STUDENT")) return "redirect:/student/dashboard";
+        return "redirect:/login";
     }
 }

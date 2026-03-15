@@ -26,8 +26,7 @@ public class Result extends BaseEntity {
     private Student student;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "class_id")
-    @NotNull
+    @JoinColumn(name = "class_id", nullable = true)
     private Clazz clazz;
 
     @Digits(integer = 5, fraction = 2)
@@ -42,14 +41,43 @@ public class Result extends BaseEntity {
     @Column(name = "comment", length = 1000)
     private String comment;
 
-    public Student getStudent() { return student; }
-    public void setStudent(Student student) { this.student = student; }
-    public Clazz getClazz() { return clazz; }
-    public void setClazz(Clazz clazz) { this.clazz = clazz; }
-    public BigDecimal getScore() { return score; }
-    public void setScore(BigDecimal score) { this.score = score; }
-    public String getGrade() { return grade; }
-    public void setGrade(String grade) { this.grade = grade; }
-    public String getComment() { return comment; }
-    public void setComment(String comment) { this.comment = comment; }
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    public Clazz getClazz() {
+        return clazz;
+    }
+
+    public void setClazz(Clazz clazz) {
+        this.clazz = clazz;
+    }
+
+    public BigDecimal getScore() {
+        return score;
+    }
+
+    public void setScore(BigDecimal score) {
+        this.score = score;
+    }
+
+    public String getGrade() {
+        return grade;
+    }
+
+    public void setGrade(String grade) {
+        this.grade = grade;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
 }

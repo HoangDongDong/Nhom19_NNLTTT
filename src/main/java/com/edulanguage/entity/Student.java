@@ -42,7 +42,7 @@ public class Student extends BaseEntity {
     private Gender gender;
 
     @Size(max = 20)
-    @Column(name = "phone", length = 20)
+    @Column(name = "phone", length = 20, unique = true)
     private String phone;
 
     @Email
@@ -76,12 +76,7 @@ public class Student extends BaseEntity {
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
     private List<Result> results;
 
-    /**
-     * Quan hệ 1-1 logic với UserAccount, ánh xạ qua field related_id ở UserAccount.
-     * Từ Student có thể truy ra UserAccount tương ứng.
-     */
-    @OneToOne(mappedBy = "student", fetch = FetchType.LAZY)
-    private UserAccount userAccount;
+
 
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
@@ -109,6 +104,5 @@ public class Student extends BaseEntity {
     public void setAttendances(List<Attendance> attendances) { this.attendances = attendances; }
     public List<Result> getResults() { return results; }
     public void setResults(List<Result> results) { this.results = results; }
-    public UserAccount getUserAccount() { return userAccount; }
-    public void setUserAccount(UserAccount userAccount) { this.userAccount = userAccount; }
+
 }

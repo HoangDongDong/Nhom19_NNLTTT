@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mở Lớp Mới & Sinh Lịch Học')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: sidebar}"></nav>
+<header th:replace="~{fragments/layout :: header('Mở Lớp Mới (Auto-Generate Schedule)')}"></header>
+
+<main class="main-content">
+    <div class="mb-4 d-flex align-items-center">
+        <a th:href="@{/staff/classes}" class="btn btn-outline-secondary me-3"><i class="bi bi-arrow-left"></i> Trở về</a>
+        <h4 class="mb-0">Khởi tạo Lớp học & Lịch học dự kiến</h4>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form th:action="@{/staff/classes/new}" method="post">
+                
+                <h5 class="mb-3 text-primary"><i class="bi bi-info-circle"></i> 1. Thông tin Cơ bản</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Tên lớp học <span class="text-danger">*</span></label>
+                        <input type="text" name="className" class="form-control" required placeholder="Ví dụ: Lớp Giao Tiếp Tối 2-4-6">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Khóa học (Trình độ) <span class="text-danger">*</span></label>
+                        <select name="course.id" class="form-select" required>
+                            <option value="">-- Chọn Khóa học --</option>
+                            <option th:each="course : ${courses}" th:value="${course.id}" th:text="${course.courseName} + ' (' + ${course.level} + ')'"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Giáo viên phụ trách <span class="text-danger">*</span></label>
+                        <select name="teacher.id" class="form-select" required>
+                            <option value="">-- Chọn Giáo viên --</option>
+                            <option th:each="teacher : ${teachers}" th:value="${teacher.id}" th:text="${teacher.fullName}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Phòng học (Mặc định) <span class="text-danger">*</span></label>
+                        <select name="room.id" class="form-select" required>
+                            <option value="">-- Chọn Phòng cố định --</option>
+                            <option th:each="r : ${rooms}" th:value="${r.id}" th:text="${r.roomName} + ' (Sức chứa: ' + ${r.capacity} + ')'"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Số học viên tối đa <span class="text-danger">*</span></label>
+                        <input type="number" name="maxStudent" class="form-control" value="20" min="1" required>
+                    </div>
+                </div>
+
+                <hr class="text-muted mb-4">
+
+                <h5 class="mb-3 text-success"><i class="bi bi-calendar-plus"></i> 2. Thiết lập Khung Lịch Học (Auto-Generate)</h5>
+                <p class="text-muted small mb-3">Hệ thống sẽ dựa vào Ngày khai giảng đến Bế giảng để tự động chèn các buổi học vào những <strong>Thứ</strong> được chọn trong Khung Thời Gian dưới đây.</p>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Ngày Khai Giảng (Start Date) <span class="text-danger">*</span></label>
+                        <input type="date" name="startDate" class="form-control" required id="startDate">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ngày Bế Giảng (End Date) <span class="text-danger">*</span></label>
+                        <input type="date" name="endDate" class="form-control" required id="endDate">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label d-block">Mẫu Tần suất Học (Pattern) <span class="text-danger">*</span></label>
+                        <div class="btn-group" role="group">
+                            <input type="checkbox" class="btn-check" name="daysOfWeek" id="day1" value="1">
+                            <label class="btn btn-outline-primary" for="day1">Thứ 2</label>
+
+                            <input type="checkbox" class="btn-check" name="daysOfWeek" id="day2" value="2">
+                            <label class="btn btn-outline-primary" for="day2">Thứ 3</label>
+
+                            <input type="checkbox" class="btn-check" name="daysOfWeek" id="day3" value="3">
+                            <label class="btn btn-outline-primary" for="day3">Thứ 4</label>
+
+                            <input type="checkbox" class="btn-check" name="daysOfWeek" id="day4" value="4">
+                            <label class="btn btn-outline-primary" for="day4">Thứ 5</label>
+
+                            <input type="checkbox" class="btn-check" name="daysOfWeek" id="day5" value="5">
+                            <label class="btn btn-outline-primary" for="day5">Thứ 6</label>
+
+                            <input type="checkbox" class="btn-check" name="daysOfWeek" id="day6" value="6">
+                            <label class="btn btn-outline-primary" for="day6">Thứ 7</label>
+
+                            <input type="checkbox" class="btn-check" name="daysOfWeek" id="day7" value="7">
+                            <label class="btn btn-outline-primary" for="day7">Chủ Nhật</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Giờ học bắt đầu <span class="text-danger">*</span></label>
+                        <input type="time" name="startTimeStr" class="form-control" value="18:00" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Giờ học kết thúc <span class="text-danger">*</span></label>
+                        <input type="time" name="endTimeStr" class="form-control" value="19:30" required>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-end">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="bi bi-magic"></i> Tạo Lớp & Sinh Lịch Tự Động
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Validate custom
+    document.querySelector('form').addEventListener('submit', function(e) {
+        var checkboxes = document.querySelectorAll('input[name="daysOfWeek"]:checked');
+        if (checkboxes.length === 0) {
+            e.preventDefault();
+            alert("Vui lòng chọn ít nhất 1 Thứ trong tuần để hệ thống sinh lịch!");
+        }
+        var start = document.getElementById('startDate').value;
+        var end = document.getElementById('endDate').value;
+        if (start && end && start > end) {
+            e.preventDefault();
+            alert("Ngày Bế giảng phải lớn hơn hoặc bằng Ngày Khai giảng!");
+        }
+    });
+</script>
+</body>
+</html>
