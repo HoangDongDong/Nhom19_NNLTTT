@@ -55,15 +55,14 @@ public class StaffsPanel extends JPanel {
     private void refreshTable() {
         tableModel.setRowCount(0);
         List<Staff> list = staffService.findAll();
-        for (Staff s : list) {
-            tableModel.addRow(new Object[]{
-                    s.getId(),
-                    s.getFullName(),
-                    s.getEmail() != null ? s.getEmail() : "",
-                    s.getPhone() != null ? s.getPhone() : "",
-                    s.getRole() != null ? s.getRole().name() : ""
-            });
-        }
+        list.stream()
+                .forEach(s -> tableModel.addRow(new Object[]{
+                        s.getId(),
+                        s.getFullName(),
+                        s.getEmail() != null ? s.getEmail() : "",
+                        s.getPhone() != null ? s.getPhone() : "",
+                        s.getRole() != null ? s.getRole().name() : ""
+                }));
     }
 
     private void doAdd() {

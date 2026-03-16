@@ -66,24 +66,27 @@ public class CertificateSelectDialog extends JDialog {
         eligibleList.clear();
         try {
             List<Enrollment> all = enrollmentService.findAll();
-            for (Enrollment enr : all) {
-                if (!"ACTIVE".equals(enr.getStatus())) continue;
-                if (enr.getStudent() == null || enr.getClazz() == null) continue;
-                Optional<Result> optRes = resultService.findByStudentIdAndClazzId(
-                        enr.getStudent().getId(), enr.getClazz().getId());
-                if (optRes.isEmpty()) continue;
-                String grade = optRes.get().getGrade();
-                if (grade == null || grade.equals("F") || grade.equals("Không đạt")) continue;
-                eligibleList.add(new EligibleEnrollment(enr, optRes.get()));
-                String courseName = enr.getClazz().getCourse() != null ? enr.getClazz().getCourse().getCourseName() : "N/A";
-                tableModel.addRow(new Object[]{
-                        enr.getId(),
-                        enr.getStudent().getFullName(),
-                        enr.getClazz().getClassName(),
-                        courseName,
-                        grade
-                });
-            }
+            all.stream()
+                    .filter(enr -> "ACTIVE".equals(enr.getStatus()))
+                    .filter(enr -> enr.getStudent() != null && enr.getClazz() != null)
+                    .forEach(enr -> {
+                        Optional<Result> optRes = resultService.findByStudentIdAndClazzId(
+                                enr.getStudent().getId(), enr.getClazz().getId());
+                        if (optRes.isEmpty()) return;
+                        String grade = optRes.get().getGrade();
+                        if (grade == null || grade.equals("F") || grade.equals("Không đạt")) return;
+                        eligibleList.add(new EligibleEnrollment(enr, optRes.get()));
+                        String courseName = enr.getClazz().getCourse() != null
+                                ? enr.getClazz().getCourse().getCourseName()
+                                : "N/A";
+                        tableModel.addRow(new Object[]{
+                                enr.getId(),
+                                enr.getStudent().getFullName(),
+                                enr.getClazz().getClassName(),
+                                courseName,
+                                grade
+                        });
+                    });
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Lỗi tải dữ liệu: " + ex.getMessage(), "Lỗi", JOptionPane.ERROR_MESSAGE);
         }

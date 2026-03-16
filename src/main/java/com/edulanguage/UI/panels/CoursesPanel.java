@@ -73,28 +73,24 @@ public class CoursesPanel extends JPanel {
                 Long studentId = account.getRelatedId();
                 List<Enrollment> enrollments = enrollmentService.findByStudentId(studentId);
                 Set<Long> addedIds = new LinkedHashSet<>();
-                for (Enrollment e : enrollments) {
-                    Clazz clazz = e.getClazz();
-                    if (clazz == null || clazz.getCourse() == null || clazz.getCourse().getId() == null) continue;
-                    Course c = clazz.getCourse();
-                    if (!addedIds.add(c.getId())) continue;
-                    addCourseRow(c);
-                }
+                enrollments.stream()
+                        .map(Enrollment::getClazz)
+                        .filter(clazz -> clazz != null && clazz.getCourse() != null && clazz.getCourse().getId() != null)
+                        .map(Clazz::getCourse)
+                        .filter(c -> addedIds.add(c.getId()))
+                        .forEach(this::addCourseRow);
             } else if (isTeacher) {
                 java.util.List<com.edulanguage.entity.Clazz> classes =
                         clazzDao.findByTeacherId(currentTeacherId);
                 Set<Long> addedIds = new LinkedHashSet<>();
-                for (com.edulanguage.entity.Clazz clazz : classes) {
-                    if (clazz.getCourse() == null || clazz.getCourse().getId() == null) continue;
-                    Course c = clazz.getCourse();
-                    if (!addedIds.add(c.getId())) continue;
-                    addCourseRow(c);
-                }
+                classes.stream()
+                        .filter(clazz -> clazz.getCourse() != null && clazz.getCourse().getId() != null)
+                        .map(com.edulanguage.entity.Clazz::getCourse)
+                        .filter(c -> addedIds.add(c.getId()))
+                        .forEach(this::addCourseRow);
             } else {
                 List<Course> courses = courseService.findAll();
-                for (Course c : courses) {
-                    addCourseRow(c);
-                }
+                courses.stream().forEach(this::addCourseRow);
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,

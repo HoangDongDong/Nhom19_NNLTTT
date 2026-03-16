@@ -73,13 +73,12 @@ public class ResultServiceImpl implements ResultService {
                 result.setGrade(record.grade() != null && !record.grade().isBlank() ? record.grade() : null);
                 result.setComment(record.comment() != null && !record.comment().isBlank() ? record.comment() : null);
             } else {
-                result = Result.builder()
-                        .student(studentOpt.get())
-                        .clazz(clazz)
-                        .score(record.score())
-                        .grade(record.grade() != null && !record.grade().isBlank() ? record.grade() : null)
-                        .comment(record.comment() != null && !record.comment().isBlank() ? record.comment() : null)
-                        .build();
+                result = new Result();
+                result.setStudent(studentOpt.get());
+                result.setClazz(clazz);
+                result.setScore(record.score());
+                result.setGrade(record.grade() != null && !record.grade().isBlank() ? record.grade() : null);
+                result.setComment(record.comment() != null && !record.comment().isBlank() ? record.comment() : null);
             }
             resultRepository.save(result);
         }

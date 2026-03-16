@@ -72,9 +72,8 @@ public class ResultPanel extends JPanel {
         if (teacherId == null) return;
         ClazzDao clazzDao = context.getBean(ClazzDao.class);
         List<Clazz> classes = clazzDao.findByTeacherId(teacherId);
-        for (Clazz c : classes) {
-            classCombo.addItem(new ClazzItem(c));
-        }
+        classes.stream()
+                .forEach(c -> classCombo.addItem(new ClazzItem(c)));
     }
 
     private void loadEnrollments() {
@@ -94,9 +93,9 @@ public class ResultPanel extends JPanel {
         List<Enrollment> enrollments = enrollmentRepo.findByClazzId(selected.clazz.getId());
         List<Result> existingResults = resultService.findByClazzId(selected.clazz.getId());
         Map<Long, Result> existingMap = new HashMap<>();
-        for (Result r : existingResults) {
-            existingMap.put(r.getStudent().getId(), r);
-        }
+        existingResults.stream()
+                .filter(r -> r.getStudent() != null && r.getStudent().getId() != null)
+                .forEach(r -> existingMap.put(r.getStudent().getId(), r));
 
         JPanel header = new JPanel(new GridLayout(1, 4, 5, 5));
         header.add(new JLabel("Học viên", SwingConstants.LEFT));
@@ -105,29 +104,31 @@ public class ResultPanel extends JPanel {
         header.add(new JLabel("Nhận xét", SwingConstants.LEFT));
         studentListPanel.add(header);
 
-        for (Enrollment en : enrollments) {
-            Student s = en.getStudent();
-            Result res = existingMap.get(s.getId());
-            String scoreStr = res != null && res.getScore() != null ? res.getScore().toString() : "";
-            String grade = res != null && res.getGrade() != null ? res.getGrade() : "";
-            String comment = res != null && res.getComment() != null ? res.getComment() : "";
+        enrollments.stream()
+                .map(Enrollment::getStudent)
+                .filter(s -> s != null && s.getId() != null)
+                .forEach(s -> {
+                    Result res = existingMap.get(s.getId());
+                    String scoreStr = res != null && res.getScore() != null ? res.getScore().toString() : "";
+                    String grade = res != null && res.getGrade() != null ? res.getGrade() : "";
+                    String comment = res != null && res.getComment() != null ? res.getComment() : "";
 
-            JTextField scoreField = new JTextField(scoreStr, 6);
-            JComboBox<String> gradeCombo = new JComboBox<>(GRADES);
-            gradeCombo.setSelectedItem(grade.isEmpty() ? "" : grade);
-            JTextField commentField = new JTextField(comment, 25);
+                    JTextField scoreField = new JTextField(scoreStr, 6);
+                    JComboBox<String> gradeCombo = new JComboBox<>(GRADES);
+                    gradeCombo.setSelectedItem(grade.isEmpty() ? "" : grade);
+                    JTextField commentField = new JTextField(comment, 25);
 
-            scoreFieldMap.put(s.getId(), scoreField);
-            gradeComboMap.put(s.getId(), gradeCombo);
-            commentFieldMap.put(s.getId(), commentField);
+                    scoreFieldMap.put(s.getId(), scoreField);
+                    gradeComboMap.put(s.getId(), gradeCombo);
+                    commentFieldMap.put(s.getId(), commentField);
 
-            JPanel row = new JPanel(new GridLayout(1, 4, 5, 5));
-            row.add(new JLabel(s.getFullName()));
-            row.add(scoreField);
-            row.add(gradeCombo);
-            row.add(commentField);
-            studentListPanel.add(row);
-        }
+                    JPanel row = new JPanel(new GridLayout(1, 4, 5, 5));
+                    row.add(new JLabel(s.getFullName()));
+                    row.add(scoreField);
+                    row.add(gradeCombo);
+                    row.add(commentField);
+                    studentListPanel.add(row);
+                });
 
         studentListPanel.revalidate();
         studentListPanel.repaint();

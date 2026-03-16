@@ -55,15 +55,14 @@ public class RoomsPanel extends JPanel {
     private void refreshTable() {
         tableModel.setRowCount(0);
         List<Room> list = roomService.findAll();
-        for (Room r : list) {
-            tableModel.addRow(new Object[]{
-                    r.getId(),
-                    r.getRoomName(),
-                    r.getCapacity() != null ? r.getCapacity() : "",
-                    r.getLocation() != null ? r.getLocation() : "",
-                    r.getStatus() != null ? r.getStatus().name() : ""
-            });
-        }
+        list.stream()
+                .forEach(r -> tableModel.addRow(new Object[]{
+                        r.getId(),
+                        r.getRoomName(),
+                        r.getCapacity() != null ? r.getCapacity() : "",
+                        r.getLocation() != null ? r.getLocation() : "",
+                        r.getStatus() != null ? r.getStatus().name() : ""
+                }));
     }
 
     private void doAdd() {

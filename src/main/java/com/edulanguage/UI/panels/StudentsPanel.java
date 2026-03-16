@@ -110,12 +110,12 @@ public class StudentsPanel extends JPanel {
             java.util.List<com.edulanguage.entity.Clazz> classes =
                     clazzDao.findByTeacherId(currentTeacherId);
             java.util.Set<Long> added = new java.util.HashSet<>();
-            for (com.edulanguage.entity.Clazz c : classes) {
-                if (c.getEnrollments() == null) continue;
-                for (com.edulanguage.entity.Enrollment e : c.getEnrollments()) {
-                    Student s = e.getStudent();
-                    if (s == null || s.getId() == null || !added.add(s.getId())) continue;
-                    tableModel.addRow(new Object[]{
+            classes.stream()
+                    .filter(c -> c.getEnrollments() != null)
+                    .flatMap(c -> c.getEnrollments().stream())
+                    .map(com.edulanguage.entity.Enrollment::getStudent)
+                    .filter(s -> s != null && s.getId() != null && added.add(s.getId()))
+                    .forEach(s -> tableModel.addRow(new Object[]{
                             s.getId(),
                             s.getFullName(),
                             s.getDateOfBirth() != null ? s.getDateOfBirth().format(DATE_FMT) : "",
@@ -123,22 +123,18 @@ public class StudentsPanel extends JPanel {
                             s.getPhone() != null ? s.getPhone() : "",
                             s.getEmail() != null ? s.getEmail() : "",
                             s.getStatus() != null ? s.getStatus().name() : ""
-                    });
-                }
-            }
+                    }));
         } else {
-            List<Student> list = studentService.findAll();
-            for (Student s : list) {
-                tableModel.addRow(new Object[]{
-                        s.getId(),
-                        s.getFullName(),
-                        s.getDateOfBirth() != null ? s.getDateOfBirth().format(DATE_FMT) : "",
-                        s.getGender() != null ? genderLabel(s.getGender()) : "",
-                        s.getPhone() != null ? s.getPhone() : "",
-                        s.getEmail() != null ? s.getEmail() : "",
-                        s.getStatus() != null ? s.getStatus().name() : ""
-                });
-            }
+            studentService.findAll().stream()
+                    .forEach(s -> tableModel.addRow(new Object[]{
+                            s.getId(),
+                            s.getFullName(),
+                            s.getDateOfBirth() != null ? s.getDateOfBirth().format(DATE_FMT) : "",
+                            s.getGender() != null ? genderLabel(s.getGender()) : "",
+                            s.getPhone() != null ? s.getPhone() : "",
+                            s.getEmail() != null ? s.getEmail() : "",
+                            s.getStatus() != null ? s.getStatus().name() : ""
+                    }));
         }
     }
 
@@ -598,17 +594,15 @@ public class StudentsPanel extends JPanel {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        for (com.edulanguage.entity.Enrollment e : enrollments) {
-            com.edulanguage.entity.Clazz clazz = e.getClazz();
-            if (clazz == null) continue;
-            String courseName = clazz.getCourse() != null ? clazz.getCourse().getCourseName() : "";
-            model.addRow(new Object[]{
-                    clazz.getId(),
-                    clazz.getClassName(),
-                    courseName,
-                    e.getStatus()
-            });
-        }
+        enrollments.stream()
+                .map(e -> new Object[]{
+                        e.getClazz() != null ? e.getClazz().getId() : null,
+                        e.getClazz() != null ? e.getClazz().getClassName() : "",
+                        (e.getClazz() != null && e.getClazz().getCourse() != null)
+                                ? e.getClazz().getCourse().getCourseName() : "",
+                        e.getStatus()
+                })
+                .forEach(model::addRow);
 
         JTable tbl = new JTable(model);
         tbl.getTableHeader().setReorderingAllowed(false);

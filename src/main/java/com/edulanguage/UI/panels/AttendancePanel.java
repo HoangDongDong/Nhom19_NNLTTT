@@ -75,9 +75,8 @@ public class AttendancePanel extends JPanel {
         if (teacherId == null) return;
         ClazzDao clazzDao = context.getBean(ClazzDao.class);
         List<Clazz> classes = clazzDao.findByTeacherId(teacherId);
-        for (Clazz c : classes) {
-            classCombo.addItem(new ClazzItem(c));
-        }
+        classes.stream()
+                .forEach(c -> classCombo.addItem(new ClazzItem(c)));
     }
 
     private void loadEnrollments() {
@@ -99,9 +98,9 @@ public class AttendancePanel extends JPanel {
         LocalDate date = new java.sql.Date(d.getTime()).toLocalDate();
         List<com.edulanguage.entity.Attendance> existing = attendanceService.findByClazzIdAndDate(selected.clazz.getId(), date);
         Map<Long, com.edulanguage.entity.Attendance> existingMap = new HashMap<>();
-        for (com.edulanguage.entity.Attendance a : existing) {
-            existingMap.put(a.getStudent().getId(), a);
-        }
+        existing.stream()
+                .filter(a -> a.getStudent() != null && a.getStudent().getId() != null)
+                .forEach(a -> existingMap.put(a.getStudent().getId(), a));
 
         JPanel header = new JPanel(new GridLayout(1, 5, 5, 5));
         header.add(new JLabel("ID", SwingConstants.LEFT));
@@ -111,27 +110,29 @@ public class AttendancePanel extends JPanel {
         header.add(new JLabel(""));
         studentListPanel.add(header);
 
-        for (Enrollment en : enrollments) {
-            Student s = en.getStudent();
-            com.edulanguage.entity.Attendance att = existingMap.get(s.getId());
-            String statusStr = att != null ? att.getStatus().name() : "PRESENT";
-            String note = att != null && att.getNote() != null ? att.getNote() : "";
+        enrollments.stream()
+                .map(Enrollment::getStudent)
+                .filter(s -> s != null && s.getId() != null)
+                .forEach(s -> {
+                    com.edulanguage.entity.Attendance att = existingMap.get(s.getId());
+                    String statusStr = att != null ? att.getStatus().name() : "PRESENT";
+                    String note = att != null && att.getNote() != null ? att.getNote() : "";
 
-            JComboBox<String> statusCombo = new JComboBox<>(new String[]{"PRESENT", "ABSENT", "LATE", "EXCUSED"});
-            statusCombo.setSelectedItem(statusStr);
-            JTextField noteField = new JTextField(note, 25);
+                    JComboBox<String> statusCombo = new JComboBox<>(new String[]{"PRESENT", "ABSENT", "LATE", "EXCUSED"});
+                    statusCombo.setSelectedItem(statusStr);
+                    JTextField noteField = new JTextField(note, 25);
 
-            statusComboMap.put(s.getId(), statusCombo);
-            noteFieldMap.put(s.getId(), noteField);
+                    statusComboMap.put(s.getId(), statusCombo);
+                    noteFieldMap.put(s.getId(), noteField);
 
-            JPanel row = new JPanel(new GridLayout(1, 5, 5, 5));
-            row.add(new JLabel(String.valueOf(s.getId())));
-            row.add(new JLabel(s.getFullName()));
-            row.add(statusCombo);
-            row.add(noteField);
-            row.add(new JLabel(""));
-            studentListPanel.add(row);
-        }
+                    JPanel row = new JPanel(new GridLayout(1, 5, 5, 5));
+                    row.add(new JLabel(String.valueOf(s.getId())));
+                    row.add(new JLabel(s.getFullName()));
+                    row.add(statusCombo);
+                    row.add(noteField);
+                    row.add(new JLabel(""));
+                    studentListPanel.add(row);
+                });
 
         studentListPanel.revalidate();
         studentListPanel.repaint();
@@ -153,10 +154,10 @@ public class AttendancePanel extends JPanel {
 
         Map<Long, String> statuses = new HashMap<>();
         Map<Long, String> notes = new HashMap<>();
-        for (Long studentId : statusComboMap.keySet()) {
-            statuses.put(studentId, (String) statusComboMap.get(studentId).getSelectedItem());
+        statusComboMap.forEach((studentId, combo) -> {
+            statuses.put(studentId, (String) combo.getSelectedItem());
             notes.put(studentId, noteFieldMap.get(studentId).getText());
-        }
+        });
 
         if (statuses.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Chưa có dữ liệu. Vui lòng nhấn 'Lấy danh sách' trước.", "Thông báo", JOptionPane.WARNING_MESSAGE);

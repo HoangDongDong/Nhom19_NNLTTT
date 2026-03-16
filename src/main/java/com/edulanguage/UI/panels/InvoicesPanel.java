@@ -73,21 +73,24 @@ public class InvoicesPanel extends JPanel {
     private void refreshTable() {
         tableModel.setRowCount(0);
         List<Invoice> invoices = financeService.findAllInvoices();
-        for (Invoice i : invoices) {
-            String courseName = "N/A";
-            if (i.getEnrollment() != null && i.getEnrollment().getClazz() != null && i.getEnrollment().getClazz().getCourse() != null) {
-                courseName = i.getEnrollment().getClazz().getCourse().getCourseName();
-            }
+        invoices.stream()
+                .forEach(i -> {
+                    String courseName = "N/A";
+                    if (i.getEnrollment() != null
+                            && i.getEnrollment().getClazz() != null
+                            && i.getEnrollment().getClazz().getCourse() != null) {
+                        courseName = i.getEnrollment().getClazz().getCourse().getCourseName();
+                    }
 
-            tableModel.addRow(new Object[]{
-                    i.getId(),
-                    i.getStudent() != null ? i.getStudent().getFullName() : "N/A",
-                    courseName,
-                    String.format("%,.0f", i.getTotalAmount()),
-                    i.getIssueDate() != null ? i.getIssueDate().format(DATE_FMT) : "",
-                    i.getStatus()
-            });
-        }
+                    tableModel.addRow(new Object[]{
+                            i.getId(),
+                            i.getStudent() != null ? i.getStudent().getFullName() : "N/A",
+                            courseName,
+                            String.format("%,.0f", i.getTotalAmount()),
+                            i.getIssueDate() != null ? i.getIssueDate().format(DATE_FMT) : "",
+                            i.getStatus()
+                    });
+                });
     }
 
     private void doPayment() {

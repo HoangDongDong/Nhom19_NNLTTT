@@ -83,13 +83,12 @@ public class AttendanceService {
                 attendance.setStatus(AttendanceStatus.valueOf(statusStr));
                 attendance.setNote(note != null && !note.isBlank() ? note : null);
             } else {
-                attendance = Attendance.builder()
-                        .student(student)
-                        .clazz(clazz)
-                        .date(date)
-                        .status(AttendanceStatus.valueOf(statusStr))
-                        .note(note != null && !note.isBlank() ? note : null)
-                        .build();
+                attendance = new Attendance();
+                attendance.setStudent(student);
+                attendance.setClazz(clazz);
+                attendance.setDate(date);
+                attendance.setStatus(AttendanceStatus.valueOf(statusStr));
+                attendance.setNote(note != null && !note.isBlank() ? note : null);
             }
             attendanceRepository.save(attendance);
         }

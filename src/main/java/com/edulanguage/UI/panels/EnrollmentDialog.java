@@ -55,13 +55,14 @@ public class EnrollmentDialog extends JDialog {
 
         gbc.gridx = 1; gbc.weightx = 1.0;
         JComboBox<ClazzValueItem> cbClasses = new JComboBox<>();
-        for (Clazz clazz : availableClasses) {
-            String label = String.format("%s - %s (Học phí: %s)", 
-                    clazz.getClassName(), 
-                    clazz.getCourse().getCourseName(), 
-                    clazz.getCourse().getFee());
-            cbClasses.addItem(new ClazzValueItem(clazz.getId(), label));
-        }
+        availableClasses.stream()
+                .forEach(clazz -> {
+                    String label = String.format("%s - %s (Học phí: %s)",
+                            clazz.getClassName(),
+                            clazz.getCourse().getCourseName(),
+                            clazz.getCourse().getFee());
+                    cbClasses.addItem(new ClazzValueItem(clazz.getId(), label));
+                });
         formPanel.add(cbClasses, gbc);
 
         contentPane.add(formPanel, BorderLayout.CENTER);

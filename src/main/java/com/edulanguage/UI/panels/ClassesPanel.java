@@ -437,21 +437,22 @@ public class ClassesPanel extends JPanel {
 
         DateTimeFormatter df = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-        for (Clazz c : classes) {
-            Course course = c.getCourse();
-            Teacher teacher = c.getTeacher();
-            Room room = c.getRoom();
-            tableModel.addRow(new Object[]{
-                    c.getId(),
-                    c.getClassName(),
-                    course != null ? course.getCourseName() : "",
-                    teacher != null ? teacher.getFullName() : "",
-                    room != null ? room.getRoomName() : "",
-                    c.getStartDate() != null ? c.getStartDate().format(df) : "",
-                    c.getEndDate() != null ? c.getEndDate().format(df) : "",
-                    c.getStatus() != null ? c.getStatus().name() : ""
-            });
-        }
+        classes.stream()
+                .forEach(c -> {
+                    Course course = c.getCourse();
+                    Teacher teacher = c.getTeacher();
+                    Room room = c.getRoom();
+                    tableModel.addRow(new Object[]{
+                            c.getId(),
+                            c.getClassName(),
+                            course != null ? course.getCourseName() : "",
+                            teacher != null ? teacher.getFullName() : "",
+                            room != null ? room.getRoomName() : "",
+                            c.getStartDate() != null ? c.getStartDate().format(df) : "",
+                            c.getEndDate() != null ? c.getEndDate().format(df) : "",
+                            c.getStatus() != null ? c.getStatus().name() : ""
+                    });
+                });
     }
 
     private void showStudentsOfSelectedClass(ClazzDao clazzDao) {
@@ -480,17 +481,16 @@ public class ClassesPanel extends JPanel {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        for (Enrollment e : enrollments) {
-            Student s = e.getStudent();
-            if (s == null) continue;
-            model.addRow(new Object[]{
-                    s.getId(),
-                    s.getFullName(),
-                    s.getEmail(),
-                    s.getPhone(),
-                    s.getStatus() != null ? s.getStatus().name() : ""
-            });
-        }
+        enrollments.stream()
+                .map(Enrollment::getStudent)
+                .filter(s -> s != null)
+                .forEach(s -> model.addRow(new Object[]{
+                        s.getId(),
+                        s.getFullName(),
+                        s.getEmail(),
+                        s.getPhone(),
+                        s.getStatus() != null ? s.getStatus().name() : ""
+                }));
 
         JTable tbl = new JTable(model);
         tbl.getTableHeader().setReorderingAllowed(false);

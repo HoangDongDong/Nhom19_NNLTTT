@@ -77,33 +77,30 @@ public class TeachersPanel extends JPanel {
                 Long studentId = account.getRelatedId();
                 List<Enrollment> enrollments = enrollmentService.findByStudentId(studentId);
                 Set<Long> addedIds = new LinkedHashSet<>();
-                for (Enrollment e : enrollments) {
-                    Clazz clazz = e.getClazz();
-                    if (clazz == null) continue;
-                    Teacher t = clazz.getTeacher();
-                    if (t == null || t.getId() == null) continue;
-                    if (!addedIds.add(t.getId())) continue;
-                    tableModel.addRow(new Object[]{
-                            t.getId(),
-                            t.getFullName(),
-                            t.getPhone(),
-                            t.getEmail(),
-                            t.getSpecialty(),
-                            t.getStatus() != null ? t.getStatus().name() : ""
-                    });
-                }
+                enrollments.stream()
+                        .map(Enrollment::getClazz)
+                        .filter(clazz -> clazz != null && clazz.getTeacher() != null && clazz.getTeacher().getId() != null)
+                        .map(Clazz::getTeacher)
+                        .filter(t -> addedIds.add(t.getId()))
+                        .forEach(t -> tableModel.addRow(new Object[]{
+                                t.getId(),
+                                t.getFullName(),
+                                t.getPhone(),
+                                t.getEmail(),
+                                t.getSpecialty(),
+                                t.getStatus() != null ? t.getStatus().name() : ""
+                        }));
             } else {
                 List<Teacher> teachers = teacherService.findAll();
-                for (Teacher t : teachers) {
-                    tableModel.addRow(new Object[]{
-                            t.getId(),
-                            t.getFullName(),
-                            t.getPhone(),
-                            t.getEmail(),
-                            t.getSpecialty(),
-                            t.getStatus() != null ? t.getStatus().name() : ""
-                    });
-                }
+                teachers.stream()
+                        .forEach(t -> tableModel.addRow(new Object[]{
+                                t.getId(),
+                                t.getFullName(),
+                                t.getPhone(),
+                                t.getEmail(),
+                                t.getSpecialty(),
+                                t.getStatus() != null ? t.getStatus().name() : ""
+                        }));
             }
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this,
@@ -136,17 +133,18 @@ public class TeachersPanel extends JPanel {
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
         };
-        for (Clazz c : classes) {
-            String courseName = c.getCourse() != null ? c.getCourse().getCourseName() : "";
-            String roomName = c.getRoom() != null ? c.getRoom().getRoomName() : "";
-            model.addRow(new Object[]{
-                    c.getId(),
-                    c.getClassName(),
-                    courseName,
-                    roomName,
-                    c.getStatus() != null ? c.getStatus().name() : ""
-            });
-        }
+        classes.stream()
+                .forEach(c -> {
+                    String courseName = c.getCourse() != null ? c.getCourse().getCourseName() : "";
+                    String roomName = c.getRoom() != null ? c.getRoom().getRoomName() : "";
+                    model.addRow(new Object[]{
+                            c.getId(),
+                            c.getClassName(),
+                            courseName,
+                            roomName,
+                            c.getStatus() != null ? c.getStatus().name() : ""
+                    });
+                });
 
         JTable tbl = new JTable(model);
         tbl.getTableHeader().setReorderingAllowed(false);
